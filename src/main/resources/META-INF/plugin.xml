@@ -624,6 +624,7 @@
         <applicationConfigurable
                 groupId="language"
                 id="Haskell.Configurable"
+                displayName="Haskell"
                 instance="intellij.haskell.settings.HaskellConfigurable"/>
         <applicationService serviceImplementation="intellij.haskell.settings.HaskellSettingsPersistentStateComponent"/>
         <framework.type implementation="intellij.haskell.framework.HaskellFrameworkType"/>
