@@ -34,7 +34,7 @@ import intellij.haskell.psi._
 import intellij.haskell.runconfig.console.{HaskellConsoleView, HaskellConsoleViewMap}
 import intellij.haskell.util._
 import intellij.haskell.{HaskellFile, HaskellParserDefinition}
-import org.apache.commons.lang.StringEscapeUtils
+import com.intellij.openapi.util.text.StringUtil
 
 import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
@@ -275,7 +275,7 @@ class HaskellCompletionContributor extends CompletionContributor {
 
     private def createLookupElement(typeSignature: String): Option[LookupElementBuilder] = {
       typeSignature.split("::", 2).toSeq match {
-        case Seq(n, _) => Some(LookupElementBuilder.create(n.trim).withTypeText(StringEscapeUtils.unescapeHtml(typeSignature)))
+        case Seq(n, _) => Some(LookupElementBuilder.create(n.trim).withTypeText(StringUtil.unescapeXmlEntities(typeSignature)))
         case _ => None
       }
     }

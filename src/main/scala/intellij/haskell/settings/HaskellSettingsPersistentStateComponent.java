@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 @State(
         name = "HaskellConfiguration",
         storages = {
-                @Storage(file = "intellij-haskell.xml")
+                @Storage(value = "intellij-haskell.xml")
         }
 )
 public class HaskellSettingsPersistentStateComponent implements PersistentStateComponent<HaskellSettingsPersistentStateComponent.HaskellSettingsState> {
