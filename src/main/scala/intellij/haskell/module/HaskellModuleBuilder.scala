@@ -66,15 +66,24 @@ class HaskellModuleBuilder extends TemplateModuleBuilder(null, HaskellModuleType
   override def getNodeIcon: Icon = HaskellIcons.HaskellLogo
 
   override def setupRootModel(rootModel: ModifiableRootModel): Unit = {
-    rootModel.setSdk(HaskellSdkType.findOrCreateSdk())
-    rootModel.inheritSdk()
+    val haskellSdk = Option(HaskellSdkType.findOrCreateSdk())
+      .orElse(Option(getModuleJdk))
+      .filter(_.getSdkType == HaskellSdkType.getInstance)
+
+    haskellSdk.foreach(rootModel.setSdk)
 
     val contentEntry = doAddContentEntry(rootModel)
     val project = rootModel.getProject
 
     if (isNewProjectWithoutExistingSources) {
 
-      createStackProject(project)
+      val stackPath = haskellSdk
+        .flatMap(sdk => Option(sdk.getHomePath))
+        .getOrElse(throw new Exception(
+          "Cannot create Haskell module: no valid Haskell Tool Stack SDK is configured. " +
+            "Open Project Structure → SDKs, add a Haskell Tool Stack SDK pointing to your stack binary, then re-run the New Project wizard."))
+
+      createStackProject(project, stackPath)
 
       val packageRelativePath = StackYamlComponent.getPackagePaths(project).flatMap(_.headOption)
       packageRelativePath.flatMap(pp => HaskellModuleBuilder.createCabalInfo(rootModel.getProject, project.getBasePath, pp)) match {
@@ -144,12 +153,12 @@ class HaskellModuleBuilder extends TemplateModuleBuilder(null, HaskellModuleType
   // To prevent first page of wizard is empty.
   override def isTemplateBased: Boolean = false
 
-  private def createStackProject(project: Project): Unit = {
+  private def createStackProject(project: Project, stackPath: String): Unit = {
     val newProjectTemplateName = HaskellSettingsState.getNewProjectTemplateName
     val createModuleAction = ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
-      val processOutput = StackCommandLine.run(project, Seq("new", s"${project.getName}", "--bare", newProjectTemplateName, "-p", "author-email:Author email here", "-p", "author-name:Author name here", "-p", "category:App category here", "-p", "copyright:2019 Author name here", "-p", "github-username:Github username here"), timeoutInMillis = 60.seconds.toMillis, enableExtraArguments = false)
+      val processOutput = StackCommandLine.runWithStackPath(project, stackPath, Seq("new", s"${project.getName}", "--bare", newProjectTemplateName, "-p", "author-email:Author email here", "-p", "author-name:Author name here", "-p", "category:App category here", "-p", "copyright:2019 Author name here", "-p", "github-username:Github username here"), timeoutInMillis = 60.seconds.toMillis, enableExtraArguments = false)
       processOutput match {
-        case None => throw new Exception("Unknown error while creating new Stack project by using Stack command for creating new project on file system")
+        case None => throw new Exception(s"Failed to run 'stack new'. Verify the Haskell Tool Stack SDK at '$stackPath' is a working stack binary.")
         case Some(output) =>
           if (output.getExitCode != 0) {
             throw new Exception(s"Error while creating new Stack project: ${output.getStdout} ${output.getStderr}")
@@ -171,11 +180,21 @@ class HaskellModuleWizardStep(wizardContext: WizardContext, haskellModuleBuilder
   }
 
   override def validate(): Boolean = {
-    if (getJdk == null) {
-      Messages.showErrorDialog("You can't create a Haskell project without Stack configured as SDK", "No Haskell Tool Stack specified")
+    val sdk = getJdk
+    if (sdk == null) {
+      Messages.showErrorDialog("You can't create a Haskell project without Stack configured as SDK. Click '+' in the SDK chooser to add a Haskell Tool Stack SDK pointing to your stack binary.", "No Haskell Tool Stack specified")
+      false
+    } else if (sdk.getSdkType != HaskellSdkType.getInstance) {
+      Messages.showErrorDialog(s"The selected SDK '${sdk.getName}' is not a Haskell Tool Stack SDK. Click '+' to add one pointing to your stack binary.", "Wrong SDK type")
       false
     } else {
-      true
+      val home = sdk.getHomePath
+      if (home == null || !new File(home).exists()) {
+        Messages.showErrorDialog(s"Haskell Tool Stack SDK home path is missing or does not exist: '$home'.", "Invalid Stack path")
+        false
+      } else {
+        true
+      }
     }
   }
 }

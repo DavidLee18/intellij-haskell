@@ -28,7 +28,7 @@ import javax.swing.JComponent
 class HaskellFrameworkSupportProvider extends FrameworkSupportInModuleProvider {
   override def getFrameworkType: FrameworkTypeEx = HaskellFrameworkType.getInstance
 
-  override def isEnabledForModuleType(moduleType: ModuleType[_ <: ModuleBuilder]): Boolean = moduleType.isInstanceOf[HaskellModuleType]
+  override def isEnabledForModuleType(moduleType: ModuleType[_]): Boolean = moduleType.isInstanceOf[HaskellModuleType]
 
   override def createConfigurable(model: FrameworkSupportModel): FrameworkSupportInModuleConfigurable = {
     new FrameworkSupportInModuleConfigurable {

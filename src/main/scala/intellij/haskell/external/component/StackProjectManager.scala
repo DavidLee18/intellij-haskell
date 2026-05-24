@@ -20,7 +20,7 @@ import java.io.File
 
 import com.intellij.ProjectTopics
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.{ApplicationManager, WriteAction}
 import com.intellij.openapi.components.ProjectComponent
 import com.intellij.openapi.progress.{PerformInBackgroundOption, ProgressIndicator, ProgressManager, Task}
 import com.intellij.openapi.project.Project
@@ -498,10 +498,15 @@ class StackProjectManager(project: Project) extends ProjectComponent {
   // Makes sure that after Stack is updated the right version is displayed.
   private def fixSdkStackVersion(): Unit = {
     val sdks = ProjectJdkTable.getInstance.getSdksOfType(HaskellSdkType.getInstance)
-    sdks.forEach { sdk =>
-      val sdkModificator = sdk.getSdkModificator
-      sdkModificator.setVersionString(HaskellSdkType.getInstance.getVersionString(sdk))
-      sdkModificator.commitChanges()
-    }
+    ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
+      sdks.forEach { sdk =>
+        val version = HaskellSdkType.getInstance.getVersionString(sdk)
+        WriteAction.runAndWait[Throwable] { () =>
+          val sdkModificator = sdk.getSdkModificator
+          sdkModificator.setVersionString(version)
+          sdkModificator.commitChanges()
+        }
+      }
+    })
   }
 }

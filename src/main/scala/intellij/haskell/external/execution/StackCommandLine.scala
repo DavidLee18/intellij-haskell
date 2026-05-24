@@ -46,18 +46,23 @@ object StackCommandLine {
 
   def run(project: Project, arguments: Seq[String], timeoutInMillis: Long = CommandLine.DefaultTimeout.toMillis,
           ignoreExitCode: Boolean = false, logOutput: Boolean = false, workDir: Option[String] = None, notifyBalloonError: Boolean = false, enableExtraArguments: Boolean = true): Option[ProcessOutput] = {
-    HaskellSdkType.getStackPath(project).map(stackPath => {
-      CommandLine.runInWorkDir(
-        project,
-        workDir.getOrElse(project.getBasePath),
-        stackPath,
-        arguments ++ (if (enableExtraArguments) HaskellSettingsState.getExtraStackArguments else Seq()),
-        timeoutInMillis.toInt,
-        ignoreExitCode = ignoreExitCode,
-        logOutput = logOutput,
-        notifyBalloonError = notifyBalloonError
-      )
-    })
+    HaskellSdkType.getStackPath(project).flatMap(stackPath =>
+      runWithStackPath(project, stackPath, arguments, timeoutInMillis, ignoreExitCode, logOutput, workDir, notifyBalloonError, enableExtraArguments)
+    )
+  }
+
+  def runWithStackPath(project: Project, stackPath: String, arguments: Seq[String], timeoutInMillis: Long = CommandLine.DefaultTimeout.toMillis,
+                       ignoreExitCode: Boolean = false, logOutput: Boolean = false, workDir: Option[String] = None, notifyBalloonError: Boolean = false, enableExtraArguments: Boolean = true): Option[ProcessOutput] = {
+    Option(CommandLine.runInWorkDir(
+      project,
+      workDir.getOrElse(project.getBasePath),
+      stackPath,
+      arguments ++ (if (enableExtraArguments) HaskellSettingsState.getExtraStackArguments else Seq()),
+      timeoutInMillis.toInt,
+      ignoreExitCode = ignoreExitCode,
+      logOutput = logOutput,
+      notifyBalloonError = notifyBalloonError
+    ))
   }
 
   def runWithProgressIndicator(project: Project, workDir: Option[String], arguments: Seq[String], progressIndicator: Option[ProgressIndicator]): Option[CapturingProcessHandler] = {
