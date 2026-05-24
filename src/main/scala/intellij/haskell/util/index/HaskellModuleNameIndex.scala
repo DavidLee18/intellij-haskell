@@ -35,8 +35,8 @@ import scala.jdk.CollectionConverters._
   * Notice that Haskell modules in libraries can be found which are not exposed
   */
 object HaskellModuleNameIndex {
-  private val HaskellModuleNameIndex: ID[String, Unit] = ID.create("HaskellModuleNameIndex")
-  private val IndexVersion = 1
+  private val HaskellModuleNameIndex: ID[String, java.lang.Void] = ID.create("HaskellModuleNameIndex")
+  private val IndexVersion = 2
   private val KeyDescriptor = new EnumeratorStringDescriptor
 
   private val HaskellFileFilter = new FileBasedIndex.InputFilter() {
@@ -151,13 +151,13 @@ object HaskellModuleNameIndex {
   }
 }
 
-class HaskellModuleNameIndex extends ScalaScalarIndexExtension[String] {
+class HaskellModuleNameIndex extends ScalarIndexExtension[String] {
 
   private val haskellModuleNameIndexer = new HaskellModuleNameIndexer
 
-  override def getIndexer: DataIndexer[String, Unit, FileContent] = haskellModuleNameIndexer
+  override def getIndexer: DataIndexer[String, java.lang.Void, FileContent] = haskellModuleNameIndexer
 
-  override def getName: ID[String, Unit] = HaskellModuleNameIndex.HaskellModuleNameIndex
+  override def getName: ID[String, java.lang.Void] = HaskellModuleNameIndex.HaskellModuleNameIndex
 
   override def getKeyDescriptor: KeyDescriptor[String] = HaskellModuleNameIndex.KeyDescriptor
 
@@ -167,12 +167,12 @@ class HaskellModuleNameIndex extends ScalaScalarIndexExtension[String] {
 
   override def getVersion: Int = HaskellModuleNameIndex.IndexVersion
 
-  class HaskellModuleNameIndexer extends DataIndexer[String, Unit, FileContent] {
+  class HaskellModuleNameIndexer extends DataIndexer[String, java.lang.Void, FileContent] {
 
-    override def map(inputData: FileContent): java.util.Map[String, Unit] = {
+    override def map(inputData: FileContent): java.util.Map[String, java.lang.Void] = {
       val psiFile = inputData.getPsiFile
       HaskellPsiUtil.findModuleNameInPsiTree(psiFile) match {
-        case Some(n) => Collections.singletonMap(n, ())
+        case Some(n) => Collections.singletonMap[String, java.lang.Void](n, null)
         case _ => Collections.emptyMap()
       }
     }
