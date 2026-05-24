@@ -628,6 +628,9 @@
                 instance="intellij.haskell.settings.HaskellConfigurable"/>
         <projectService serviceImplementation="intellij.haskell.external.component.StackProjectManager"/>
         <postStartupActivity implementation="intellij.haskell.external.component.StackProjectManagerStartupActivity"/>
+        <notificationGroup id="Haskell Log" displayType="NONE" isLogByDefault="false"/>
+        <notificationGroup id="Haskell Warning" displayType="NONE"/>
+        <notificationGroup id="Haskell Balloon" displayType="BALLOON"/>
         <applicationService serviceImplementation="intellij.haskell.settings.HaskellSettingsPersistentStateComponent"/>
         <framework.type implementation="intellij.haskell.framework.HaskellFrameworkType"/>
         <lang.importOptimizer language="Haskell" implementationClass="intellij.haskell.editor.HaskellImportOptimizer"/>

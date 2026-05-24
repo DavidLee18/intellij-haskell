@@ -26,9 +26,9 @@ import javax.swing.event.HyperlinkEvent
 
 object HaskellNotificationGroup {
 
-  private val LogOnlyGroup = new NotificationGroup("Haskell Log", NotificationDisplayType.NONE, false)
-  private val WarningGroup = new NotificationGroup("Haskell Warning", NotificationDisplayType.NONE, true)
-  private val BalloonGroup = new NotificationGroup("Haskell Balloon", NotificationDisplayType.BALLOON, true)
+  private def LogOnlyGroup: NotificationGroup = NotificationGroupManager.getInstance().getNotificationGroup("Haskell Log")
+  private def WarningGroup: NotificationGroup = NotificationGroupManager.getInstance().getNotificationGroup("Haskell Warning")
+  private def BalloonGroup: NotificationGroup = NotificationGroupManager.getInstance().getNotificationGroup("Haskell Balloon")
 
   def logErrorEvent(project: Option[Project], message: String): Unit = {
     logEvent(project, message, ERROR, LogOnlyGroup.createNotification)
@@ -75,7 +75,7 @@ object HaskellNotificationGroup {
   }
 
   def logErrorBalloonEvent(project: Project, message: String, listener: NotificationListener): Unit = {
-    BalloonGroup.createNotification("", message, ERROR.toNotificationType, listener).notify(project)
+    BalloonGroup.createNotification("", message, ERROR.toNotificationType).setListener(listener).notify(project)
   }
 
   def logErrorBalloonEvent(message: String): Unit = {
@@ -103,7 +103,7 @@ object HaskellNotificationGroup {
   }
 
   def logInfoBalloonEvent(project: Project, message: String, listener: NotificationListener): Unit = {
-    BalloonGroup.createNotification("", message, INFO.toNotificationType, listener).notify(project)
+    BalloonGroup.createNotification("", message, INFO.toNotificationType).setListener(listener).notify(project)
   }
 
   def logErrorBalloonEventWithLink(project: Project, filePath: String, errorMessage: String, lineNr: Int, columnNr: Int): Unit = {
