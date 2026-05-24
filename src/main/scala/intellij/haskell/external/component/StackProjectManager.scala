@@ -124,19 +124,38 @@ object StackProjectManager {
             case Ormolu => HaskellSettingsState.ormoluPath
             case StylishHaskell => HaskellSettingsState.stylishHaskellPath
           }
+        } else if (GlobalInfo.toolPath(tool).exists() && !update) {
+          Some(GlobalInfo.toolPath(tool).getAbsolutePath)
         } else {
-          if (!GlobalInfo.toolPath(tool).exists() || update) {
-            progressIndicator.setText(s"Busy with installing ${tool.name} in ${GlobalInfo.toolsBinPath}")
-            StackCommandLine.installTool(project, progressIndicator, tool.name)
-            if (GlobalInfo.toolPath(tool).exists()) {
-              Some(GlobalInfo.toolPath(tool).getAbsolutePath)
-            } else {
-              None
-            }
-          } else {
-            Some(GlobalInfo.toolPath(tool).getAbsolutePath)
+          // Before falling back to a slow source build via `stack install`, look for an
+          // existing executable on PATH and in common ghcup/Homebrew locations.
+          findToolOnPath(tool.name) match {
+            case Some(path) => Some(path)
+            case None =>
+              progressIndicator.setText(s"Busy with installing ${tool.name} in ${GlobalInfo.toolsBinPath}")
+              StackCommandLine.installTool(project, progressIndicator, tool.name)
+              if (GlobalInfo.toolPath(tool).exists()) {
+                Some(GlobalInfo.toolPath(tool).getAbsolutePath)
+              } else {
+                None
+              }
           }
         }
+      }
+
+      private def findToolOnPath(toolName: String): Option[String] = {
+        val pathEnv = Option(System.getenv("PATH")).getOrElse("")
+        val pathDirs = pathEnv.split(java.io.File.pathSeparatorChar).filter(_.nonEmpty)
+        val extraDirs = Seq(
+          new java.io.File(System.getProperty("user.home"), ".ghcup/bin").getPath,
+          new java.io.File(System.getProperty("user.home"), ".cabal/bin").getPath,
+          "/opt/homebrew/bin",
+          "/usr/local/bin"
+        )
+        (pathDirs ++ extraDirs).iterator
+          .map(dir => new java.io.File(dir, toolName))
+          .find(f => f.isFile && f.canExecute)
+          .map(_.getAbsolutePath)
       }
 
       /**
