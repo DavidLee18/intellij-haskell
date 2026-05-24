@@ -13,7 +13,7 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.{Disposer, IconLoader}
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.wm.{ToolWindowAnchor, ToolWindowManager}
+import com.intellij.openapi.wm.{RegisterToolWindowTask, ToolWindowAnchor, ToolWindowManager}
 import com.intellij.pom.Navigatable
 import com.intellij.ui.content.ContentFactory
 import com.intellij.util.concurrency.SequentialTaskExecutor
@@ -39,8 +39,8 @@ class HaskellProblemsView(project: Project) extends ProblemsView(project) {
   if (HaskellProjectUtil.isHaskellProject(project)) {
     UIUtil.invokeLaterIfNeeded(() => {
       if (!project.isDisposed) {
-        val toolWindow = toolWindowManager.registerToolWindow(ProblemsToolWindowId, false, ToolWindowAnchor.LEFT, project, true)
-        val content = ContentFactory.SERVICE.getInstance.createContent(problemsPanel, "", false)
+        val toolWindow = toolWindowManager.registerToolWindow(RegisterToolWindowTask.notClosable(ProblemsToolWindowId, ToolWindowAnchor.LEFT))
+        val content = ContentFactory.getInstance().createContent(problemsPanel, "", false)
         content.setHelpId("reference.problems.tool.window")
         toolWindow.getContentManager.addContent(content)
         Disposer.register(project, () => {
@@ -145,6 +145,6 @@ class HaskellProblemsView(project: Project) extends ProblemsView(project) {
 
 object HaskellProblemsView {
   def getInstance(project: Project): HaskellProblemsView = {
-    ProblemsView.SERVICE.getInstance(project).asInstanceOf[HaskellProblemsView]
+    ProblemsView.getInstance(project).asInstanceOf[HaskellProblemsView]
   }
 }
