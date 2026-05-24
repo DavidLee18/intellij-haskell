@@ -4,6 +4,8 @@ lazy val commonSettings = Seq(
 )
 
 val scalaTest = "org.scalatest" %% "scalatest" % "3.2.12" % Test
+val junit = "junit" % "junit" % "4.13.2" % Test
+val hamcrest = "org.hamcrest" % "hamcrest" % "2.2" % Test
 val sprayJson = "io.spray" %% "spray-json" % "1.3.6"
 val snakeYaml = "org.yaml" % "snakeyaml" % "1.30"
 val scaffeine = "com.github.blemale" %% "scaffeine" % "5.1.2"
@@ -20,6 +22,8 @@ lazy val intellijHaskell = (project in file(".")).
     Global / javacOptions ++= Seq("-source", "17", "-target", "17"),
     Global / scalacOptions ++= Seq("-release", "17", "-deprecation", "-feature", "-unchecked"),
     libraryDependencies += scalaTest,
+    libraryDependencies += junit,
+    libraryDependencies += hamcrest,
     libraryDependencies += sprayJson,
     libraryDependencies += snakeYaml,
     libraryDependencies += scaffeine,
