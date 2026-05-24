@@ -265,10 +265,15 @@ abstract class StackRepl(project: Project, projectReplTargets: Option[ProjectRep
               execute(":set +c", forceExecute = true)
               execute(":set -fdefer-type-errors", forceExecute = true)
               execute(":set -fshow-loaded-modules", forceExecute = true)
-              execute(":set -fno-max-valid-substitutions", forceExecute = true)
+              execute(":set -fno-show-valid-substitutions", forceExecute = true)
               if (HaskellProjectUtil.setNoDiagnosticsShowCaretFlag(project)) {
                 execute(s":set ${StackCommandLine.NoDiagnosticsShowCaretFlag}", forceExecute = true)
               }
+              // Re-process modules so :set +c collects type info (modern GHCi requires +c to be active
+              // before module load). Then list modules so subclasses can track what's loaded; :reload's
+              // own output doesn't include the module list when nothing needed recompiling.
+              execute(":reload", forceExecute = true)
+              execute(":show modules", forceExecute = true).foreach(onModulesListed)
             }
             logInfo("REPL is started")
             available = true
@@ -317,20 +322,19 @@ abstract class StackRepl(project: Project, projectReplTargets: Option[ProjectRep
   }
 
   private def createGhciOptionsFile: File = {
-    // global-repl.ghci was used so can still be in cache directory
     val ghciOptionsFile = new File(GlobalInfo.getIntelliJHaskellDirectory, "repl.ghci")
 
     if (!ghciOptionsFile.exists()) {
       ghciOptionsFile.createNewFile()
-      ghciOptionsFile.setWritable(true, true)
-      HaskellFileUtil.removeGroupWritePermission(ghciOptionsFile)
+    }
+    ghciOptionsFile.setWritable(true, true)
+    HaskellFileUtil.removeGroupWritePermission(ghciOptionsFile)
 
-      val writer = new BufferedWriter(new FileWriter(ghciOptionsFile))
-      try {
-        writer.write(s""":set prompt "$EndOfOutputIndicator\\n"""")
-      } finally {
-        writer.close()
-      }
+    val writer = new BufferedWriter(new FileWriter(ghciOptionsFile))
+    try {
+      writer.write(s""":set prompt "$EndOfOutputIndicator\\n"""")
+    } finally {
+      writer.close()
     }
     ghciOptionsFile
   }
@@ -358,6 +362,8 @@ abstract class StackRepl(project: Project, projectReplTargets: Option[ProjectRep
   }
 
   def restart(forceExit: Boolean = false): Unit
+
+  protected def onModulesListed(output: StackReplOutput): Unit = ()
 
   private def logError(message: String): Unit = {
     HaskellNotificationGroup.logErrorBalloonEvent(project, s"[$getComponentName] $message")

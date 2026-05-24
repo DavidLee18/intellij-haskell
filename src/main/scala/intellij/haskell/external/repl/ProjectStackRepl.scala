@@ -114,12 +114,25 @@ case class ProjectStackRepl(project: Project, projectReplTargets: ProjectReplTar
     }
   }
 
+  override protected def onModulesListed(output: StackReplOutput): Unit = {
+    val ShowModulesLine = """^\s*([\w.]+)\s+\(.*\)\s*$""".r
+    val names = output.stdoutLines.collect { case ShowModulesLine(name) => name }
+    if (names.nonEmpty) {
+      loadedDependentModules.clear()
+      names.foreach { mn =>
+        loadedDependentModules.put(mn, DependentModuleInfo())
+        everLoadedDependentModules.put(mn, DependentModuleInfo())
+      }
+    }
+  }
+
   private def setLoadedModules(output: StackReplOutput): Unit = {
     loadedDependentModules.clear()
     output.stdoutLines.lastOption.foreach(line =>
       if (!line.contains("modules loaded: none.") && line.contains("modules loaded: ")) {
         val modulesLine = line.split("loaded:")(1).init // The init to get rid of the dot which is last character
-        val loadedModuleNames = modulesLine.split(",").map(_.trim)
+        // With -fshow-loaded-modules, each token is "ModuleName (/path/to/Module.o)" — take the first whitespace-separated word.
+        val loadedModuleNames = modulesLine.split(",").map(_.trim).map(_.takeWhile(c => !c.isWhitespace))
         loadedModuleNames.foreach(mn => loadedDependentModules.put(mn, DependentModuleInfo()))
         loadedModuleNames.foreach(mn => everLoadedDependentModules.put(mn, DependentModuleInfo()))
       })

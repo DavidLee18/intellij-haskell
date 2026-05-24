@@ -35,12 +35,16 @@ class HaskellDocumentationProvider extends AbstractDocumentationProvider {
         case (Some(file), Some(oe)) =>
           val psiFile = file.getOriginalFile
           val moduleName = HaskellPsiUtil.findModuleName(psiFile)
-          val isSourceFile = HaskellProjectUtil.isSourceFile(psiFile)
-          val typeSignature = if (isSourceFile) {
+          // For type lookup, query against the cursor token's file (a project source file) rather
+          // than the resolved declaration's file (which may be a library file).
+          val cursorFile = Option(oe.getContainingFile).map(_.getOriginalFile)
+          val isCursorInSource = cursorFile.exists(HaskellProjectUtil.isSourceFile)
+          val typeSignature = if (isCursorInSource) {
             TypeInfoComponent.findTypeInfoForElement(oe).toOption.map(_.typeSignature).map(StringUtil.escapeString)
           } else {
             None
           }
+          val isSourceFile = isCursorInSource
 
           (moduleName, typeSignature) match {
             case (Some(mn), Some(ts)) => s"""$DoubleNbsp $ts $DoubleNbsp -- $mn """
@@ -66,7 +70,7 @@ class HaskellDocumentationProvider extends AbstractDocumentationProvider {
         case Some(e) =>
           val project = e.getProject
           if (e.isInstanceOf[PsiFile]) {
-            getQuickNavigateInfo(e, e)
+            getQuickNavigateInfo(e, Option(originalElement).getOrElse(e))
           } else {
             HaskellPsiUtil.findQualifiedName(e) match {
               case Some(qone) =>
@@ -82,8 +86,8 @@ class HaskellDocumentationProvider extends AbstractDocumentationProvider {
 
                 ProgressManager.checkCanceled()
                 val documentationText = HoogleComponent.findDocumentation(project, qone).getOrElse("No documentation found")
-                (documentationText + Separator + getQuickNavigateInfo(e, e) + presentationText.map(t => Separator + t).getOrElse("")) + Separator
-              case _ => getQuickNavigateInfo(e, e)
+                (documentationText + Separator + getQuickNavigateInfo(e, Option(originalElement).getOrElse(e)) + presentationText.map(t => Separator + t).getOrElse("")) + Separator
+              case _ => getQuickNavigateInfo(e, Option(originalElement).getOrElse(e))
             }
           }
         case _ => null
