@@ -30,7 +30,7 @@ object HLintRefactoringsParser {
 
   def parseRefactoring(hlintOutput: String): Either[String, Refactoring] = parse(hlintOutput, refactoringParser(_), verboseFailures = true) match {
     case Success(value, _) => Right(value)
-    case Failure(label, i, _) => Left(s"Could not parse HLint output | HLintOutput: $hlintOutput | Label: $label | Index: $i")
+    case f: Failure => Left(s"Could not parse HLint output | HLintOutput: $hlintOutput | Label: ${f.label} | Index: ${f.index}")
   }
 
   @annotation.nowarn
