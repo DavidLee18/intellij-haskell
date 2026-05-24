@@ -16,12 +16,14 @@
 
 package intellij.haskell.action
 
-import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnAction, AnActionEvent}
 import intellij.haskell.external.component.NameInfoComponentResult._
 import intellij.haskell.external.component._
 import intellij.haskell.util.HaskellEditorUtil
 
 class ShowNameInfoAction extends AnAction {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   override def update(actionEvent: AnActionEvent): Unit = {
     HaskellEditorUtil.enableAction(onlyForSourceFile = false, actionEvent)

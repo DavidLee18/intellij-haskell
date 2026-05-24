@@ -18,6 +18,7 @@ package intellij.haskell.action
 
 import com.intellij.ide.actions.CreateFileFromTemplateDialog.Builder
 import com.intellij.ide.actions.{CreateFileAction, CreateFileFromTemplateAction}
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.ide.fileTemplates.{FileTemplate, FileTemplateManager, FileTemplateUtil}
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -38,6 +39,8 @@ object CreateHaskellFileAction {
 }
 
 class CreateHaskellFileAction extends CreateFileFromTemplateAction(CreateHaskellFileAction.HaskellModule, "", HaskellIcons.HaskellFileLogo) with DumbAware {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   override def buildDialog(project: Project, directory: PsiDirectory, builder: Builder): Unit = {
     builder.setTitle(CreateHaskellFileAction.HaskellModule).addKind("Empty module", HaskellIcons.HaskellFileLogo, "Haskell Module").setValidator(new InputValidatorEx {

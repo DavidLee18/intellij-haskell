@@ -16,7 +16,7 @@
 
 package intellij.haskell.action
 
-import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnAction, AnActionEvent}
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.SystemInfo
 import intellij.haskell.external.component.{HLintComponent, HaskellComponentsManager, HoogleComponent, StackProjectManager}
@@ -26,6 +26,8 @@ import intellij.haskell.util.HaskellEditorUtil
 import scala.collection.mutable.ArrayBuffer
 
 class AboutAction extends AnAction {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   override def update(actionEvent: AnActionEvent): Unit = {
     HaskellEditorUtil.enableExternalAction(actionEvent, !StackProjectManager.isInitializing(_))

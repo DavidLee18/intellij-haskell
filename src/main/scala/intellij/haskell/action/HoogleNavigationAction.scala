@@ -35,7 +35,7 @@ import com.intellij.ide.util.EditSourceUtil
 import com.intellij.ide.util.gotoByName.{ChooseByNameFilter, ChooseByNameLanguageFilter, ChooseByNamePopup, GotoClassSymbolConfiguration}
 import com.intellij.lang.Language
 import com.intellij.navigation.{ChooseByNameContributor, NavigationItem}
-import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnActionEvent}
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import intellij.haskell.external.component.{HoogleComponent, StackProjectManager}
@@ -43,6 +43,8 @@ import intellij.haskell.navigation.{GotoByHoogleModel, HoogleByNameContributor}
 import intellij.haskell.util.HaskellEditorUtil
 
 class HoogleNavigationAction extends GotoActionBase {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   private val contributors = Array[ChooseByNameContributor](new HoogleByNameContributor)
 

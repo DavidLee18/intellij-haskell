@@ -17,12 +17,14 @@
 package intellij.haskell.action
 
 import com.intellij.codeInsight.actions.ReformatCodeAction
-import com.intellij.openapi.actionSystem.{AnActionEvent, Presentation}
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnActionEvent, Presentation}
 import com.intellij.openapi.project.Project
 import intellij.haskell.external.component.StackProjectManager
 import intellij.haskell.util.{HaskellEditorUtil, HaskellFileUtil}
 
 class HaskellReformatAction extends ReformatCodeAction {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   private val presentation: Presentation = getTemplatePresentation
   presentation.setText("Reformat Code")

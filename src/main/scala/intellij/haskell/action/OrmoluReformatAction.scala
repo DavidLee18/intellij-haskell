@@ -17,7 +17,7 @@
 package intellij.haskell.action
 
 import com.intellij.execution.process.ProcessOutput
-import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnAction, AnActionEvent}
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
@@ -27,6 +27,8 @@ import intellij.haskell.util._
 import intellij.haskell.{HTool, HaskellNotificationGroup}
 
 class OrmoluReformatAction extends AnAction {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   override def update(actionEvent: AnActionEvent): Unit = {
     HaskellEditorUtil.enableExternalAction(actionEvent, (project: Project) => StackProjectManager.isOrmoluAvailable(project).isDefined)

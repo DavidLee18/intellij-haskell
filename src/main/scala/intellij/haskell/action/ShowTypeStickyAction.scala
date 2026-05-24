@@ -1,6 +1,6 @@
 package intellij.haskell.action
 
-import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnAction, AnActionEvent}
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 import intellij.haskell.external.component.HaskellComponentsManager
@@ -10,6 +10,8 @@ import intellij.haskell.util.{HaskellEditorUtil, StringUtil}
 import scala.annotation.tailrec
 
 class ShowTypeStickyAction extends AnAction {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   override def update(actionEvent: AnActionEvent): Unit = {
     HaskellEditorUtil.enableAction(onlyForSourceFile = true, actionEvent)

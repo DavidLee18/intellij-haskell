@@ -17,7 +17,7 @@
 package intellij.haskell.action
 
 import com.intellij.codeInsight.navigation.NavigationUtil
-import com.intellij.openapi.actionSystem.{AnAction, AnActionEvent}
+import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnAction, AnActionEvent}
 import com.intellij.openapi.util.text.StringUtil
 import intellij.haskell.external.component.HaskellComponentsManager
 import intellij.haskell.navigation.HaskellReference
@@ -25,6 +25,8 @@ import intellij.haskell.psi.HaskellPsiUtil
 import intellij.haskell.util.HaskellEditorUtil
 
 class GotoInstanceDeclarationAction extends AnAction {
+
+  override def getActionUpdateThread: ActionUpdateThread = ActionUpdateThread.BGT
 
   override def update(actionEvent: AnActionEvent): Unit = {
     HaskellEditorUtil.enableAction(onlyForSourceFile = false, actionEvent)
