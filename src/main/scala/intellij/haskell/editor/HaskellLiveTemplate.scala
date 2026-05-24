@@ -6,12 +6,12 @@ import com.intellij.psi.util.PsiTreeUtil
 import intellij.haskell.HaskellFileType
 import intellij.haskell.psi.{HaskellExpression, HaskellFileHeader}
 
-class HaskellTemplateContextType extends TemplateContextType("HASKELL_FILE", "Haskell") {
+class HaskellTemplateContextType extends TemplateContextType("Haskell") {
   override def isInContext(file: PsiFile, offset: Int): Boolean =
     file.getFileType == HaskellFileType.INSTANCE
 }
 
-class HaskellPragmaTemplateContextType extends TemplateContextType("HASKELL_PRAGMA", "Pragma", classOf[HaskellTemplateContextType]) {
+class HaskellPragmaTemplateContextType extends TemplateContextType("Pragma") {
   override def isInContext(file: PsiFile, offset: Int): Boolean = {
     if (file.getFileType != HaskellFileType.INSTANCE) return false
     if (offset < 5) return true
@@ -21,7 +21,7 @@ class HaskellPragmaTemplateContextType extends TemplateContextType("HASKELL_PRAG
   }
 }
 
-class HaskellGlobalDefinitionTemplateContextType extends TemplateContextType("HASKELL_GLOB_DEF", "Global definition", classOf[HaskellTemplateContextType]) {
+class HaskellGlobalDefinitionTemplateContextType extends TemplateContextType("Global definition") {
   override def isInContext(file: PsiFile, offset: Int): Boolean = {
     if (file.getFileType != HaskellFileType.INSTANCE) return false
     var element = file.findElementAt(offset)
