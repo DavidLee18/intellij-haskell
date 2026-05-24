@@ -23,7 +23,7 @@ import intellij.haskell.module.HaskellModuleType
 class HaskellModuleEditorsProvider extends DefaultModuleEditorsProvider {
 
   override def createEditors(state: ModuleConfigurationState): Array[ModuleConfigurationEditor] = {
-    val module = state.getRootModel.getModule
+    val module = state.getCurrentRootModel.getModule
     if (!ModuleType.get(module).isInstanceOf[HaskellModuleType]) {
       ModuleConfigurationEditor.EMPTY
     } else {

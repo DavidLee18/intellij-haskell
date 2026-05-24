@@ -21,7 +21,9 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.{ApplicationManager, WriteAction}
 import com.intellij.openapi.module.{ModifiableModuleModel, Module, ModuleType}
 import com.intellij.openapi.options.ConfigurationException
-import com.intellij.openapi.project.{Project, ProjectManager}
+import com.intellij.ide.impl.OpenProjectTask
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ex.ProjectManagerEx
 import com.intellij.openapi.projectRoots.SdkTypeId
 import com.intellij.openapi.roots._
 import com.intellij.openapi.roots.libraries.{Library, LibraryTablesRegistrar, LibraryUtil}
@@ -133,7 +135,7 @@ class HaskellModuleBuilder extends TemplateModuleBuilder(null, HaskellModuleType
   }
 
   override def createProject(name: String, path: String): Project = {
-    ProjectManager.getInstance.createProject(name, path)
+    ProjectManagerEx.getInstanceEx.newProject(java.nio.file.Paths.get(path), OpenProjectTask.build().withProjectName(name))
   }
 
 
