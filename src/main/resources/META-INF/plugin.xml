@@ -626,6 +626,8 @@
                 id="Haskell.Configurable"
                 displayName="Haskell"
                 instance="intellij.haskell.settings.HaskellConfigurable"/>
+        <projectService serviceImplementation="intellij.haskell.external.component.StackProjectManager"/>
+        <postStartupActivity implementation="intellij.haskell.external.component.StackProjectManagerStartupActivity"/>
         <applicationService serviceImplementation="intellij.haskell.settings.HaskellSettingsPersistentStateComponent"/>
         <framework.type implementation="intellij.haskell.framework.HaskellFrameworkType"/>
         <lang.importOptimizer language="Haskell" implementationClass="intellij.haskell.editor.HaskellImportOptimizer"/>
@@ -665,11 +667,6 @@
 
     </extensions>
 
-    <application-components>
-        <!-- Add your application components here -->
-    </application-components>
-
-    <project-components><component><implementation-class>intellij.haskell.external.component.StackProjectManager</implementation-class></component><component><implementation-class>intellij.haskell.external.component.HaskellDocumentationProvider</implementation-class></component></project-components>
 
     <actions>
         <action id="Haskell.HaskellFile" class="intellij.haskell.action.CreateHaskellFileAction"

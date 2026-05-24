@@ -20,8 +20,9 @@ import java.io.File
 
 import com.intellij.ProjectTopics
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.{ApplicationManager, WriteAction}
-import com.intellij.openapi.components.ProjectComponent
+import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.progress.{PerformInBackgroundOption, ProgressIndicator, ProgressManager, Task}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
@@ -102,7 +103,7 @@ object StackProjectManager {
   }
 
   def getStackProjectManager(project: Project): Option[StackProjectManager] = {
-    project.isDisposed.optionNot(project.getComponent(classOf[StackProjectManager]))
+    project.isDisposed.optionNot(project.getService(classOf[StackProjectManager]))
   }
 
   def getProjectLibraryFileWatcher(project: Project): Option[ProjectLibraryFileWatcher] = {
@@ -436,9 +437,7 @@ object StackProjectManager {
   }
 }
 
-class StackProjectManager(project: Project) extends ProjectComponent {
-
-  override def getComponentName: String = "stack-project-manager"
+class StackProjectManager(project: Project) extends Disposable {
 
   @volatile
   private var initializing = false
@@ -479,7 +478,7 @@ class StackProjectManager(project: Project) extends ProjectComponent {
     replsManager = Option(new StackReplsManager(project))
   }
 
-  override def projectClosed(): Unit = {
+  override def dispose(): Unit = {
     if (HaskellProjectUtil.isHaskellProject(project)) {
       replsManager.foreach(_.getGlobalRepl.exit())
       replsManager.foreach(_.getGlobalRepl2.exit())
@@ -488,9 +487,7 @@ class StackProjectManager(project: Project) extends ProjectComponent {
     }
   }
 
-  override def initComponent(): Unit = {}
-
-  override def projectOpened(): Unit = {
+  def onProjectOpened(): Unit = {
     if (HaskellProjectUtil.isHaskellProject(project)) {
       disableDefaultReformatAction()
 
@@ -504,8 +501,6 @@ class StackProjectManager(project: Project) extends ProjectComponent {
       }
     }
   }
-
-  override def disposeComponent(): Unit = {}
 
   private def disableDefaultReformatAction(): Unit = {
     val actionManager = ActionManager.getInstance
@@ -527,5 +522,11 @@ class StackProjectManager(project: Project) extends ProjectComponent {
         }
       }
     })
+  }
+}
+
+class StackProjectManagerStartupActivity extends StartupActivity.DumbAware {
+  override def runActivity(project: Project): Unit = {
+    StackProjectManager.getStackProjectManager(project).foreach(_.onProjectOpened())
   }
 }
