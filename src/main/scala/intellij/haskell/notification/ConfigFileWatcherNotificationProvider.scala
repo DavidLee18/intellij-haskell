@@ -2,14 +2,15 @@ package intellij.haskell.notification
 
 import java.util
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.{Function => JFunction}
+import javax.swing.JComponent
 
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.{VFileContentChangeEvent, VFileEvent}
-import com.intellij.ui.{EditorNotificationPanel, EditorNotifications}
+import com.intellij.ui.{EditorNotificationPanel, EditorNotificationProvider, EditorNotifications}
 import intellij.haskell.external.component.StackProjectManager
 import intellij.haskell.util.{HaskellFileUtil, HaskellProjectUtil}
 
@@ -17,23 +18,20 @@ import scala.collection.concurrent
 import scala.jdk.CollectionConverters._
 
 object ConfigFileWatcherNotificationProvider {
-  private val ConfigFileWatcherKey: Key[EditorNotificationPanel] = Key.create("Haskell config file watcher")
   val showNotificationsByProject: concurrent.Map[Project, Boolean] = new ConcurrentHashMap[Project, Boolean]().asScala
 }
 
-class ConfigFileWatcherNotificationProvider extends EditorNotifications.Provider[EditorNotificationPanel] {
+class ConfigFileWatcherNotificationProvider extends EditorNotificationProvider {
 
-  override def getKey: Key[EditorNotificationPanel] = ConfigFileWatcherNotificationProvider.ConfigFileWatcherKey
-
-  override def createNotificationPanel(virtualFile: VirtualFile, fileEditor: FileEditor, project: Project): EditorNotificationPanel = {
+  override def collectNotificationData(project: Project, file: VirtualFile): JFunction[_ >: FileEditor, _ <: JComponent] = {
     if (HaskellProjectUtil.isHaskellProject(project) && ConfigFileWatcherNotificationProvider.showNotificationsByProject.get(project).contains(true)) {
-      createPanel(project, virtualFile)
+      (_: FileEditor) => createPanel(project)
     } else {
       null
     }
   }
 
-  private def createPanel(project: Project, file: VirtualFile): EditorNotificationPanel = {
+  private def createPanel(project: Project): EditorNotificationPanel = {
     val notifications = EditorNotifications.getInstance(project)
 
     val panel = new EditorNotificationPanel
