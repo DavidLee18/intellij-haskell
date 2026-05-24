@@ -84,6 +84,6 @@ object HaskellSettingsState {
   }
 
   def getDefaultGhcOptions: Seq[String] = {
-    state.defaultGhcOptions.split(" ").map(_.trim)
+    state.defaultGhcOptions.split(" ").toIndexedSeq.map(_.trim)
   }
 }

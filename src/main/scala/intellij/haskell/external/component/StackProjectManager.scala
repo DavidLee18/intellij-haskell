@@ -18,12 +18,11 @@ package intellij.haskell.external.component
 
 import java.io.File
 
-import com.intellij.ProjectTopics
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.{ApplicationManager, WriteAction}
+import com.intellij.openapi.application.{ApplicationManager, ReadAction, WriteAction}
 import com.intellij.openapi.startup.StartupActivity
-import com.intellij.openapi.progress.{PerformInBackgroundOption, ProgressIndicator, ProgressManager, Task}
+import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager, Task}
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.projectRoots.ProjectJdkTable
 import com.intellij.openapi.roots.{ModifiableRootModel, ModuleRootEvent, ModuleRootListener, ModuleRootModificationUtil}
@@ -115,7 +114,7 @@ object StackProjectManager {
 
     val title = (if (update) "Updating" else "Installing") + " Haskell tools"
 
-    ProgressManager.getInstance().run(new Task.Backgroundable(project, title, true, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
+    ProgressManager.getInstance().run(new Task.Backgroundable(project, title, true, null) {
 
       private def isToolAvailable(progressIndicator: ProgressIndicator, tool: HTool) = {
         if (HaskellSettingsState.useCustomTools) {
@@ -207,7 +206,7 @@ object StackProjectManager {
           installHaskellTools(project, update = false)
         }
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Building project, starting REPL(s) and preloading cache", false, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Building project, starting REPL(s) and preloading cache", false, null) {
 
           def run(progressIndicator: ProgressIndicator): Unit = {
             try {
@@ -361,7 +360,7 @@ object StackProjectManager {
                 messageBus.connect().subscribe(VirtualFileManager.VFS_CHANGES, new ConfigFileWatcher(project, notifications))
 
 
-                messageBus.connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+                messageBus.connect().subscribe(com.intellij.openapi.roots.ModuleRootListener.TOPIC, new ModuleRootListener() {
                   override def rootsChanged(event: ModuleRootEvent): Unit = {
                     notifications.updateAllNotifications()
                   }
@@ -396,7 +395,7 @@ object StackProjectManager {
                 override def childRemoved(event: PsiTreeChangeEvent): Unit = {
                   invalidateInfo(event)
                 }
-              }))
+              }, project))
 
               progressIndicator.setText("Busy preloading caches")
               if (!preloadLibraryFilesCacheFuture.isDone || !preloadStackComponentInfoCache.isDone || !preloadLibraryIdentifiersCacheFuture.isDone || !replsLoad.isDone) {
@@ -527,6 +526,10 @@ class StackProjectManager(project: Project) extends Disposable {
 
 class StackProjectManagerStartupActivity extends StartupActivity.DumbAware {
   override def runActivity(project: Project): Unit = {
-    StackProjectManager.getStackProjectManager(project).foreach(_.onProjectOpened())
+    // Post-startup activities run off the EDT; PSI reads in initStackReplsManager() (cabal file
+    // parsing) require an explicit read action under modern platform threading.
+    ReadAction.run[Throwable] { () =>
+      StackProjectManager.getStackProjectManager(project).foreach(_.onProjectOpened())
+    }
   }
 }

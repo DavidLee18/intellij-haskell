@@ -19,7 +19,7 @@ package intellij.haskell.external.component
 import java.util.concurrent.ConcurrentHashMap
 
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.progress.{PerformInBackgroundOption, ProgressIndicator, ProgressManager, Task}
+import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager, Task}
 import com.intellij.openapi.project.Project
 import intellij.haskell.HaskellNotificationGroup
 import intellij.haskell.annotator.HaskellAnnotator
@@ -75,7 +75,7 @@ object ProjectLibraryBuilder {
   private def build(project: Project, componentLibTargets: Set[ComponentTarget], libTargetsName: String): Unit = {
     buildStatus.put(project, Building(componentLibTargets))
 
-    ProgressManager.getInstance().run(new Task.Backgroundable(project, "Building project", false, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
+    ProgressManager.getInstance().run(new Task.Backgroundable(project, "Building project", false, null) {
 
       def run(progressIndicator: ProgressIndicator): Unit = {
 

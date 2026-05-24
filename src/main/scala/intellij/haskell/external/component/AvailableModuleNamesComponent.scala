@@ -93,7 +93,7 @@ object AvailableModuleNamesComponent {
           HaskellNotificationGroup.logInfoEvent(project, s"Index not ready while findHaskellFiles for module ${currentModule.getName} ")
           Iterable()
       }
-    }, s"find Haskell files for module ${currentModule.getName}").toOption.toIterable.flatten
+    }, s"find Haskell files for module ${currentModule.getName}").toOption.iterator.to(Iterable).flatten
   }
 
 

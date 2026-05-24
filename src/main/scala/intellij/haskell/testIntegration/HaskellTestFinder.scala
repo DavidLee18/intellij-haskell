@@ -2,7 +2,7 @@ package intellij.haskell.testIntegration
 
 import java.util
 
-import com.intellij.psi.PsiElement
+import com.intellij.psi.{PsiElement, PsiManager}
 import com.intellij.psi.search.{FilenameIndex, GlobalSearchScope}
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.testIntegration.TestFinder
@@ -27,7 +27,7 @@ class HaskellTestFinder extends TestFinder {
     */
   override def findTestsForClass(psiElement: PsiElement): util.Collection[PsiElement] = {
     val testFileName = psiElement.getContainingFile.getName.replace(".hs", "Spec.hs")
-    val testFiles: Seq[PsiElement] = FilenameIndex.getFilesByName(psiElement.getProject, testFileName, GlobalSearchScope.projectScope(psiElement.getProject)).toIndexedSeq
+    val testFiles: Seq[PsiElement] = FilenameIndex.getVirtualFilesByName(testFileName, GlobalSearchScope.projectScope(psiElement.getProject)).asScala.flatMap(vf => Option(PsiManager.getInstance(psiElement.getProject).findFile(vf))).toIndexedSeq
     testFiles.asJavaCollection
   }
 
@@ -36,7 +36,7 @@ class HaskellTestFinder extends TestFinder {
     */
   override def findClassesForTest(psiElement: PsiElement): util.Collection[PsiElement] = {
     val sourceFileName = psiElement.getContainingFile.getName.replace("Spec.hs", ".hs")
-    val sourceFiles: Seq[PsiElement] = FilenameIndex.getFilesByName(psiElement.getProject, sourceFileName, GlobalSearchScope.projectScope(psiElement.getProject)).toIndexedSeq
+    val sourceFiles: Seq[PsiElement] = FilenameIndex.getVirtualFilesByName(sourceFileName, GlobalSearchScope.projectScope(psiElement.getProject)).asScala.flatMap(vf => Option(PsiManager.getInstance(psiElement.getProject).findFile(vf))).toIndexedSeq
     sourceFiles.asJavaCollection
   }
 
