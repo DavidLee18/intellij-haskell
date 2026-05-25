@@ -44,7 +44,7 @@ import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util.HaskellFileUtil
 import javax.swing.{JCheckBox, JComponent, JPanel}
 
-class HaskellReformatBeforeCheckinHandler(project: Project, checkinProjectPanel: CheckinProjectPanel) extends CheckinHandler with CheckinMetaHandler {
+class HaskellReformatBeforeCheckinHandler(project: Project, checkinProjectPanel: CheckinProjectPanel) extends CheckinHandler {
 
   override def getBeforeCheckinConfigurationPanel: RefreshableOnComponent = {
 
@@ -70,22 +70,21 @@ class HaskellReformatBeforeCheckinHandler(project: Project, checkinProjectPanel:
     }
   }
 
-  override def runCheckinHandlers(finishAction: Runnable): Unit = {
+  override def beforeCheckin(): CheckinHandler.ReturnResult = {
     import scala.jdk.CollectionConverters._
     val virtualFiles = checkinProjectPanel.getVirtualFiles
-
-    val performCheckoutAction: Runnable = () => {
-      FileDocumentManager.getInstance.saveAllDocuments()
-      finishAction.run()
-    }
 
     if (HaskellSettingsState.isReformatCodeBeforeCommit && !DumbService.isDumb(project)) {
       val reformatResult = virtualFiles.asScala.filter(vf => HaskellFileUtil.isHaskellFile(vf)).forall(vf => HaskellFileUtil.convertToHaskellFileDispatchThread(project, vf).exists(OrmoluReformatAction.reformat))
       if (reformatResult) {
-        performCheckoutAction.run()
+        FileDocumentManager.getInstance.saveAllDocuments()
+        CheckinHandler.ReturnResult.COMMIT
+      } else {
+        CheckinHandler.ReturnResult.CANCEL
       }
     } else {
-      performCheckoutAction.run()
+      FileDocumentManager.getInstance.saveAllDocuments()
+      CheckinHandler.ReturnResult.COMMIT
     }
   }
 

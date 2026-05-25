@@ -45,7 +45,7 @@ import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util.HaskellFileUtil
 import javax.swing.{JCheckBox, JComponent, JPanel}
 
-class HaskellOptimizeImportsBeforeCheckinHandler(project: Project, checkinProjectPanel: CheckinProjectPanel) extends CheckinHandler with CheckinMetaHandler {
+class HaskellOptimizeImportsBeforeCheckinHandler(project: Project, checkinProjectPanel: CheckinProjectPanel) extends CheckinHandler {
 
   override def getBeforeCheckinConfigurationPanel: RefreshableOnComponent = {
     val optimizeBox = new NonFocusableCheckBox("Haskell optimize imports")
@@ -70,22 +70,21 @@ class HaskellOptimizeImportsBeforeCheckinHandler(project: Project, checkinProjec
     }
   }
 
-  override def runCheckinHandlers(finishAction: Runnable): Unit = {
+  override def beforeCheckin(): CheckinHandler.ReturnResult = {
     import scala.jdk.CollectionConverters._
     val virtualFiles = checkinProjectPanel.getVirtualFiles
 
-    val performCheckoutAction: Runnable = () => {
-      FileDocumentManager.getInstance.saveAllDocuments()
-      finishAction.run()
-    }
-
-    if (HaskellSettingsState.isReformatCodeBeforeCommit && !DumbService.isDumb(project)) {
-      val reformatResult = virtualFiles.asScala.forall(vf => HaskellFileUtil.convertToHaskellFileDispatchThread(project, vf).exists(HaskellImportOptimizer.removeRedundantImports))
-      if (reformatResult) {
-        performCheckoutAction.run()
+    if (HaskellSettingsState.isOptmizeImportsBeforeCommit && !DumbService.isDumb(project)) {
+      val optimizeResult = virtualFiles.asScala.filter(vf => HaskellFileUtil.isHaskellFile(vf)).forall(vf => HaskellFileUtil.convertToHaskellFileDispatchThread(project, vf).exists(HaskellImportOptimizer.removeRedundantImports))
+      if (optimizeResult) {
+        FileDocumentManager.getInstance.saveAllDocuments()
+        CheckinHandler.ReturnResult.COMMIT
+      } else {
+        CheckinHandler.ReturnResult.CANCEL
       }
     } else {
-      performCheckoutAction.run()
+      FileDocumentManager.getInstance.saveAllDocuments()
+      CheckinHandler.ReturnResult.COMMIT
     }
   }
 
