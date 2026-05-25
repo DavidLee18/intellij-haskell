@@ -17,10 +17,13 @@
 package intellij.haskell.settings
 
 import com.intellij.openapi.module.{ModuleConfigurationEditor, ModuleType}
-import com.intellij.openapi.roots.ui.configuration.{ClasspathEditor, ContentEntriesEditor, DefaultModuleEditorsProvider, ModuleConfigurationState}
+import com.intellij.openapi.roots.ui.configuration.{ClasspathEditor, ContentEntriesEditor, ModuleConfigurationEditorProvider, ModuleConfigurationState}
 import intellij.haskell.module.HaskellModuleType
 
-class HaskellModuleEditorsProvider extends DefaultModuleEditorsProvider {
+// Implements the ModuleConfigurationEditorProvider interface directly rather than extending
+// DefaultModuleEditorsProvider, which moved into java-impl (off the compile classpath) in 2025.2.
+// createEditors fully replaces the default set, so nothing was inherited from the old base.
+class HaskellModuleEditorsProvider extends ModuleConfigurationEditorProvider {
 
   override def createEditors(state: ModuleConfigurationState): Array[ModuleConfigurationEditor] = {
     val module = state.getCurrentRootModel.getModule

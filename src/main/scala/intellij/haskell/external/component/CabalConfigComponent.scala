@@ -1,7 +1,7 @@
 package intellij.haskell.external.component
 
 import java.io.File
-import java.net.URL
+import java.net.{URI, URL}
 
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.URLUtil
@@ -101,7 +101,7 @@ object CabalConfigComponent {
     }
 
     StackYamlComponent.getResolver(project).foreach(resolver => {
-      val url = new URL(s"https://www.stackage.org/$resolver/cabal.config")
+      val url = new URI(s"https://www.stackage.org/$resolver/cabal.config").toURL
       val targetFile = getCabalConfigFile(project)
 
       try {

@@ -19,8 +19,8 @@ lazy val intellijHaskell = (project in file(".")).
   settings(commonSettings: _*).
   settings(
     name := "IntelliJ Haskell",
-    Global / javacOptions ++= Seq("-source", "17", "-target", "17"),
-    Global / scalacOptions ++= Seq("-release", "17", "-deprecation", "-feature", "-unchecked"),
+    Global / javacOptions ++= Seq("-source", "21", "-target", "21"),
+    Global / scalacOptions ++= Seq("-release", "21", "-deprecation", "-feature", "-unchecked"),
     libraryDependencies += scalaTest,
     libraryDependencies += junit,
     libraryDependencies += hamcrest,
@@ -32,6 +32,9 @@ lazy val intellijHaskell = (project in file(".")).
     (Compile / unmanagedSourceDirectories) += baseDirectory.value / "gen"
   )
 
-(ThisBuild / intellijBuild) := "243.28141.41"
+// Build/compile against the OLDEST supported branch (2025.2 / 252) so the plugin stays
+// binary-compatible across the three latest IDEs: 2025.2 (252), 2025.3 (253), 2026.1 (261).
+// See plugin.xml <idea-version since-build="252" until-build="261.*"/>.
+(ThisBuild / intellijBuild) := "252.28539.54"
 
 intellijPlugins += "com.intellij.java".toPlugin

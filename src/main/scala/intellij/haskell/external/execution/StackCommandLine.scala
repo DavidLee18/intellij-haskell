@@ -193,7 +193,7 @@ object StackCommandLine {
   }
 
 
-  private class MessageViewProcessAdapter(val compileContext: CompileContext) extends ProcessAdapter() {
+  private class MessageViewProcessAdapter(val compileContext: CompileContext) extends ProcessListener {
 
     private val ansiEscapeDecoder = new AnsiEscapeDecoder()
     private val previousMessageLines = new LinkedBlockingDeque[String]

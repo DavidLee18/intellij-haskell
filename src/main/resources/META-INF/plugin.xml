@@ -441,7 +441,7 @@
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="243" until-build="243.*"/>
+    <idea-version since-build="252" until-build="261.*"/>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- File types -->
