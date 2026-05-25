@@ -187,7 +187,7 @@ object HaskellAnnotator {
       () => {
         if (!psiFile.getProject.isDisposed) {
           HaskellNotificationGroup.logInfoEvent(psiFile.getProject, s"Restart daemon code analyzer for file: ${psiFile.getName}")
-          getDaemonCodeAnalyzer(psiFile.getProject).restart(psiFile)
+          DaemonCodeAnalyzer.getInstance(psiFile.getProject).restart(psiFile)
         }
       }
     }
