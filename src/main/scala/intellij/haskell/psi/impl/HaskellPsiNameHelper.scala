@@ -1,6 +1,5 @@
 package intellij.haskell.psi.impl
 
-import com.intellij.lang.java.lexer.JavaLexer
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.LanguageLevelProjectExtension
 import com.intellij.pom.java.LanguageLevel
@@ -12,6 +11,14 @@ object HaskellPsiNameHelper {
       LanguageLevel.HIGHEST
     }
   }
+
+  // Haskell 2010 reservedid (Report §2.4). A Haskell identifier may never equal one of these.
+  // Previously this delegated to JavaLexer.isKeyword, which is both deprecated and wrong for Haskell.
+  private final val ReservedIds: Set[String] = Set(
+    "case", "class", "data", "default", "deriving", "do", "else", "foreign",
+    "if", "import", "in", "infix", "infixl", "infixr", "instance", "let",
+    "module", "newtype", "of", "then", "type", "where", "_"
+  )
 }
 
 class HaskellPsiNameHelper private() extends PsiNameHelper {
@@ -28,7 +35,7 @@ class HaskellPsiNameHelper private() extends PsiNameHelper {
 
   override def isIdentifier(text: String, languageLevel: LanguageLevel): Boolean = text != null
 
-  override def isKeyword(text: String): Boolean = text != null && JavaLexer.isKeyword(text, getLanguageLevel)
+  override def isKeyword(text: String): Boolean = text != null && HaskellPsiNameHelper.ReservedIds.contains(text)
 
   override def isQualifiedName(text: String): Boolean = {
     if (text == null) return false
