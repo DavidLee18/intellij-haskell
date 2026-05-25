@@ -32,49 +32,25 @@
 
 package intellij.haskell.action
 
-import java.awt.GridLayout
-
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.{DumbService, Project}
-import com.intellij.openapi.vcs.CheckinProjectPanel
 import com.intellij.openapi.vcs.checkin._
-import com.intellij.openapi.vcs.ui.RefreshableOnComponent
-import com.intellij.ui.NonFocusableCheckBox
-import intellij.haskell.settings.HaskellSettingsState
+import com.intellij.openapi.vcs.{CheckinProjectPanel, VcsConfiguration}
 import intellij.haskell.util.HaskellFileUtil
-import javax.swing.{JCheckBox, JComponent, JPanel}
 
+/**
+  * Reformats Haskell files (via Ormolu) when the platform's "Reformat code" before-commit
+  * option is enabled. Haskell has no internal IntelliJ formatter, so the platform's own
+  * reformat pass is a no-op for `.hs` files; this handler makes that single checkbox also
+  * cover Haskell instead of adding a separate "Haskell reformat code" checkbox.
+  */
 class HaskellReformatBeforeCheckinHandler(project: Project, checkinProjectPanel: CheckinProjectPanel) extends CheckinHandler {
-
-  override def getBeforeCheckinConfigurationPanel: RefreshableOnComponent = {
-
-    val reformatBox = new NonFocusableCheckBox("Haskell reformat code")
-    disableWhenDumb(project, reformatBox, "Impossible until indices are up-to-date")
-    new RefreshableOnComponent() {
-      override def getComponent: JComponent = {
-        val panel = new JPanel(new GridLayout(1, 0))
-        panel.add(reformatBox)
-        panel
-      }
-
-      override def refresh(): Unit = {
-      }
-
-      override def saveState(): Unit = {
-        HaskellSettingsState.setReformatCodeBeforeCommit(reformatBox.isSelected)
-      }
-
-      override def restoreState(): Unit = {
-        reformatBox.setSelected(HaskellSettingsState.isReformatCodeBeforeCommit)
-      }
-    }
-  }
 
   override def beforeCheckin(): CheckinHandler.ReturnResult = {
     import scala.jdk.CollectionConverters._
     val virtualFiles = checkinProjectPanel.getVirtualFiles
 
-    if (HaskellSettingsState.isReformatCodeBeforeCommit && !DumbService.isDumb(project)) {
+    if (VcsConfiguration.getInstance(project).REFORMAT_BEFORE_PROJECT_COMMIT && !DumbService.isDumb(project)) {
       val reformatResult = virtualFiles.asScala.filter(vf => HaskellFileUtil.isHaskellFile(vf)).forall(vf => HaskellFileUtil.convertToHaskellFileDispatchThread(project, vf).exists(OrmoluReformatAction.reformat))
       if (reformatResult) {
         FileDocumentManager.getInstance.saveAllDocuments()
@@ -83,15 +59,7 @@ class HaskellReformatBeforeCheckinHandler(project: Project, checkinProjectPanel:
         CheckinHandler.ReturnResult.CANCEL
       }
     } else {
-      FileDocumentManager.getInstance.saveAllDocuments()
       CheckinHandler.ReturnResult.COMMIT
     }
-  }
-
-
-  private def disableWhenDumb(project: Project, checkBox: JCheckBox, tooltip: String): Unit = {
-    val dumb = DumbService.isDumb(project)
-    checkBox.setEnabled(!dumb)
-    checkBox.setToolTipText(if (dumb) tooltip else "")
   }
 }

@@ -32,49 +32,25 @@
 
 package intellij.haskell.action
 
-import java.awt.GridLayout
-
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.{DumbService, Project}
-import com.intellij.openapi.vcs.CheckinProjectPanel
 import com.intellij.openapi.vcs.checkin._
-import com.intellij.openapi.vcs.ui.RefreshableOnComponent
-import com.intellij.ui.NonFocusableCheckBox
+import com.intellij.openapi.vcs.{CheckinProjectPanel, VcsConfiguration}
 import intellij.haskell.editor.HaskellImportOptimizer
-import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util.HaskellFileUtil
-import javax.swing.{JCheckBox, JComponent, JPanel}
 
+/**
+  * Removes redundant imports from Haskell files when the platform's "Optimize imports"
+  * before-commit option is enabled, so that single checkbox also covers Haskell instead of
+  * adding a separate "Haskell optimize imports" checkbox.
+  */
 class HaskellOptimizeImportsBeforeCheckinHandler(project: Project, checkinProjectPanel: CheckinProjectPanel) extends CheckinHandler {
-
-  override def getBeforeCheckinConfigurationPanel: RefreshableOnComponent = {
-    val optimizeBox = new NonFocusableCheckBox("Haskell optimize imports")
-    disableWhenDumb(project, optimizeBox, "Impossible until indices are up-to-date")
-    new RefreshableOnComponent() {
-      override def getComponent: JComponent = {
-        val panel = new JPanel(new GridLayout(1, 0))
-        panel.add(optimizeBox)
-        panel
-      }
-
-      override def refresh(): Unit = {
-      }
-
-      override def saveState(): Unit = {
-        HaskellSettingsState.setOptimizeImportsBeforeCommit(optimizeBox.isSelected)
-      }
-
-      override def restoreState(): Unit = {
-        optimizeBox.setSelected(HaskellSettingsState.isOptmizeImportsBeforeCommit)
-      }
-    }
-  }
 
   override def beforeCheckin(): CheckinHandler.ReturnResult = {
     import scala.jdk.CollectionConverters._
     val virtualFiles = checkinProjectPanel.getVirtualFiles
 
-    if (HaskellSettingsState.isOptmizeImportsBeforeCommit && !DumbService.isDumb(project)) {
+    if (VcsConfiguration.getInstance(project).OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT && !DumbService.isDumb(project)) {
       val optimizeResult = virtualFiles.asScala.filter(vf => HaskellFileUtil.isHaskellFile(vf)).forall(vf => HaskellFileUtil.convertToHaskellFileDispatchThread(project, vf).exists(HaskellImportOptimizer.removeRedundantImports))
       if (optimizeResult) {
         FileDocumentManager.getInstance.saveAllDocuments()
@@ -83,15 +59,7 @@ class HaskellOptimizeImportsBeforeCheckinHandler(project: Project, checkinProjec
         CheckinHandler.ReturnResult.CANCEL
       }
     } else {
-      FileDocumentManager.getInstance.saveAllDocuments()
       CheckinHandler.ReturnResult.COMMIT
     }
-  }
-
-
-  private def disableWhenDumb(project: Project, checkBox: JCheckBox, tooltip: String): Unit = {
-    val dumb = DumbService.isDumb(project)
-    checkBox.setEnabled(!dumb)
-    checkBox.setToolTipText(if (dumb) tooltip else "")
   }
 }
