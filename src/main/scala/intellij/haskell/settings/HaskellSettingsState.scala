@@ -86,4 +86,12 @@ object HaskellSettingsState {
   def getDefaultGhcOptions: Seq[String] = {
     state.defaultGhcOptions.split(" ").toIndexedSeq.map(_.trim)
   }
+
+  def useHlsLsp: Boolean = {
+    state.useHlsLsp
+  }
+
+  def hlsPath: Option[String] = {
+    Option(state.hlsPath).map(_.trim).filter(_.nonEmpty)
+  }
 }

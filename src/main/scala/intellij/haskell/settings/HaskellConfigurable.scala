@@ -39,6 +39,8 @@ class HaskellConfigurable extends Configurable {
   private val useCustomToolsToggle = new JCheckBox
   private val extraStackArgumentsField = new JTextField
   private val defaultGhcOptionsField = new JTextField
+  private val useHlsLspToggle = new JCheckBox
+  private val hlsPathField = new JTextField
 
   override def getDisplayName: String = {
     "Haskell"
@@ -84,6 +86,10 @@ class HaskellConfigurable extends Configurable {
     }
     extraStackArgumentsField.getDocument.addDocumentListener(docListener)
     defaultGhcOptionsField.getDocument.addDocumentListener(docListener)
+    hlsPathField.getDocument.addDocumentListener(docListener)
+    useHlsLspToggle.addChangeListener { _ =>
+      isModifiedByUser = true
+    }
 
     class SettingsGridBagConstraints extends GridBagConstraints {
 
@@ -136,6 +142,8 @@ class HaskellConfigurable extends Configurable {
       (new JLabel(HooglePath), hooglePathField),
       (new JLabel(OrmoluPath), ormoluPathField),
       (new JLabel(StylishHaskellPath), stylishHaskellPathField),
+      (new JLabel(UseHlsLsp), useHlsLspToggle),
+      (new JLabel(HlsPath), hlsPathField),
       (new JLabel(""), afterRestartLabel)
     )
 
@@ -177,6 +185,8 @@ class HaskellConfigurable extends Configurable {
     state.stylishHaskellPath = stylishHaskellPathField.getText
     state.customTools = useCustomToolsToggle.isSelected
     state.extraStackArguments = extraStackArgumentsField.getText
+    state.useHlsLsp = useHlsLspToggle.isSelected
+    state.hlsPath = hlsPathField.getText
   }
 
   private def validateREPLTimeout(): Integer = {
@@ -233,6 +243,8 @@ class HaskellConfigurable extends Configurable {
     stylishHaskellPathField.setText(state.stylishHaskellPath)
     useCustomToolsToggle.setSelected(state.customTools)
     extraStackArgumentsField.setText(state.extraStackArguments)
+    useHlsLspToggle.setSelected(state.useHlsLsp)
+    hlsPathField.setText(state.hlsPath)
   }
 }
 
@@ -248,6 +260,8 @@ object HaskellConfigurable {
   final val StylishHaskellPath = "Stylish Haskell path"
   final val OrmoluPath = "Ormolu path"
   final val UseCustomTool = "Use custom Haskell tools *"
+  final val UseHlsLsp = "Use HLS via LSP *"
+  final val HlsPath = "HLS wrapper path (leave blank to use 'haskell-language-server-wrapper' on PATH)"
   final val CustomToolPathWarning =
     """WARNING! Specifying a path for a Haskell tool will override the default
       |behavior of building that tool from the Stackage LTS. This plugin was

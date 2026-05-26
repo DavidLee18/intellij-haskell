@@ -824,4 +824,18 @@
         </group>
     </actions>
     <depends>com.intellij.modules.java</depends>
+    <depends>com.redhat.devtools.lsp4ij</depends>
+
+    <extensions defaultExtensionNs="com.redhat.devtools.lsp4ij">
+        <server id="intellij.haskell.hls"
+                name="Haskell Language Server"
+                factoryClass="intellij.haskell.lsp.HaskellLspServerFactory">
+            <description><![CDATA[
+                Bridges to <a href="https://haskell-language-server.readthedocs.io/">Haskell Language Server</a>
+                for diagnostics, hover, completion, navigation, code actions, and formatting.
+                Gated by the <b>Use HLS via LSP</b> setting; off by default.
+            ]]></description>
+        </server>
+        <languageMapping language="Haskell" serverId="intellij.haskell.hls" languageId="haskell"/>
+    </extensions>
 </idea-plugin>
