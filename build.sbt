@@ -38,3 +38,7 @@ lazy val intellijHaskell = (project in file(".")).
 (ThisBuild / intellijBuild) := "252.28539.54"
 
 intellijPlugins += "com.intellij.java".toPlugin
+
+// Phase 3 (M0): LSP client for HLS. LSP4IJ is Community-compatible (the official
+// com.intellij.platform.lsp API is Ultimate-only).
+intellijPlugins += "com.redhat.devtools.lsp4ij:0.19.4".toPlugin
