@@ -23,4 +23,8 @@ object HTool {
 
   }
 
+  case object Hls extends HTool {
+    def name: String = "haskell-language-server-wrapper"
+  }
+
 }

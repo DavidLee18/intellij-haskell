@@ -30,7 +30,8 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.{PsiTreeChangeAdapter, PsiTreeChangeEvent}
 import com.intellij.ui.EditorNotifications
-import intellij.haskell.HTool.{Hlint, Hoogle, Ormolu, StylishHaskell}
+import intellij.haskell.HTool.{Hlint, Hls, Hoogle, Ormolu, StylishHaskell}
+import intellij.haskell.external.execution.CommandLine
 import intellij.haskell.action.HaskellReformatAction
 import intellij.haskell.annotator.HaskellAnnotator
 import intellij.haskell.editor.HaskellProblemsView
@@ -69,6 +70,10 @@ object StackProjectManager {
 
   def isOrmoluAvailable(project: Project): Option[String] = {
     getStackProjectManager(project).flatMap(_.ormoluAvailable)
+  }
+
+  def isHlsAvailable(project: Project): Option[String] = {
+    getStackProjectManager(project).flatMap(_.hlsAvailable)
   }
 
   def isInstallingHaskellTools(project: Project): Boolean = {
@@ -117,12 +122,17 @@ object StackProjectManager {
     ProgressManager.getInstance().run(new Task.Backgroundable(project, title, true, null) {
 
       private def isToolAvailable(progressIndicator: ProgressIndicator, tool: HTool) = {
-        if (HaskellSettingsState.useCustomTools) {
+        if (tool == Hls) {
+          // HLS has its own dedicated setting and lives outside the stack-managed tools dir:
+          // it's installed via ghcup, not `stack install`.
+          resolveHlsPath(progressIndicator)
+        } else if (HaskellSettingsState.useCustomTools) {
           tool match {
             case Hlint => HaskellSettingsState.hlintPath
             case Hoogle => HaskellSettingsState.hooglePath
             case Ormolu => HaskellSettingsState.ormoluPath
             case StylishHaskell => HaskellSettingsState.stylishHaskellPath
+            case Hls => HaskellSettingsState.hlsPath
           }
         } else if (GlobalInfo.toolPath(tool).exists() && !update) {
           Some(GlobalInfo.toolPath(tool).getAbsolutePath)
@@ -140,6 +150,50 @@ object StackProjectManager {
                 None
               }
           }
+        }
+      }
+
+      // HLS resolution: user-set path → PATH lookup → ghcup install. Gated on useHlsLsp
+      // so users not opted into LSP never pay the install cost.
+      private def resolveHlsPath(progressIndicator: ProgressIndicator): Option[String] = {
+        if (!HaskellSettingsState.useHlsLsp) {
+          None
+        } else {
+          HaskellSettingsState.hlsPath
+            .filter(p => new java.io.File(p).canExecute)
+            .orElse(findToolOnPath(Hls.name))
+            .orElse {
+              if (installHlsViaGhcup(progressIndicator)) findToolOnPath(Hls.name) else None
+            }
+        }
+      }
+
+      private def installHlsViaGhcup(progressIndicator: ProgressIndicator): Boolean = {
+        findToolOnPath("ghcup") match {
+          case None =>
+            HaskellNotificationGroup.logErrorBalloonEvent(project,
+              "Cannot auto-install Haskell Language Server: `ghcup` is not on PATH. " +
+                "Install ghcup from https://www.haskell.org/ghcup/, or set the HLS wrapper path in Haskell settings.")
+            false
+          case Some(ghcupPath) =>
+            progressIndicator.setText("Installing Haskell Language Server via ghcup (this may take several minutes)")
+            val handler = CommandLine.runWithProgressIndicator(
+              project,
+              workDir = None,
+              ghcupPath,
+              Seq("install", "hls", "--set"),
+              Some(progressIndicator))
+            val output = handler.runProcessWithProgressIndicator(progressIndicator)
+            if (output.isCancelled) {
+              handler.destroyProcess()
+              false
+            } else if (output.getExitCode != 0) {
+              HaskellNotificationGroup.logErrorBalloonEvent(project,
+                s"`ghcup install hls` failed (exit ${output.getExitCode}). ${output.getStderr.take(500)}")
+              false
+            } else {
+              true
+            }
         }
       }
 
@@ -179,6 +233,8 @@ object StackProjectManager {
           getStackProjectManager(project).foreach(_.stylishHaskellAvailable = isToolAvailable(progressIndicator, HTool.StylishHaskell))
 
           getStackProjectManager(project).foreach(_.ormoluAvailable = isToolAvailable(progressIndicator, HTool.Ormolu))
+
+          getStackProjectManager(project).foreach(_.hlsAvailable = isToolAvailable(progressIndicator, HTool.Hls))
         } finally {
           getStackProjectManager(project).foreach(_.installingHaskellTools = false)
         }
@@ -203,6 +259,7 @@ object StackProjectManager {
           getStackProjectManager(project).foreach(_.hoogleAvailable = None)
           getStackProjectManager(project).foreach(_.ormoluAvailable = None)
           getStackProjectManager(project).foreach(_.stylishHaskellAvailable = None)
+          getStackProjectManager(project).foreach(_.hlsAvailable = None)
           installHaskellTools(project, update = false)
         }
 
@@ -452,6 +509,9 @@ class StackProjectManager(project: Project) extends Disposable {
 
   @volatile
   private var ormoluAvailable: Option[String] = None
+
+  @volatile
+  private var hlsAvailable: Option[String] = None
 
   @volatile
   private var installingHaskellTools = false

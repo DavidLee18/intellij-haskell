@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.redhat.devtools.lsp4ij.LanguageServerFactory
 import com.redhat.devtools.lsp4ij.client.features.LSPClientFeatures
 import com.redhat.devtools.lsp4ij.server.{CannotStartProcessException, OSProcessStreamConnectionProvider, StreamConnectionProvider}
+import intellij.haskell.external.component.StackProjectManager
 import intellij.haskell.settings.HaskellSettingsState
 
 import java.io.File
@@ -26,7 +27,13 @@ private class HaskellLspClientFeatures extends LSPClientFeatures {
 private class HaskellLspConnectionProvider(project: Project) extends OSProcessStreamConnectionProvider {
 
   override def start(): Unit = {
-    val wrapper = HaskellSettingsState.hlsPath.getOrElse("haskell-language-server-wrapper")
+    // Resolution order: user-set settings path → project's auto-resolved/installed path
+    // (StackProjectManager runs `ghcup install hls` during init if needed) → bare wrapper
+    // name on PATH as last resort.
+    val wrapper = HaskellSettingsState.hlsPath
+      .orElse(StackProjectManager.isHlsAvailable(project))
+      .getOrElse("haskell-language-server-wrapper")
+
     if (wrapper.contains(File.separator) && !new File(wrapper).canExecute) {
       throw new CannotStartProcessException(
         s"Haskell Language Server wrapper not found or not executable at '$wrapper'. " +
