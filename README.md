@@ -1,99 +1,72 @@
 # ![logo](logo/icon_intellij_haskell_32.png) IntelliJ plugin for Haskell
 
-# [![Join the chat at https://gitter.im/intellij-haskell/Lobby](https://badges.gitter.im/intellij-haskell/Lobby.svg)](https://gitter.im/intellij-haskell/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H6QKQKFRKJBF2&item_name=IntelliJ-Haskell&currency_code=EUR) ![Build](https://github.com/rikvdkleij/intellij-haskell/actions/workflows/scala.yml/badge.svg)
+A fork of [rikvdkleij/intellij-haskell](https://github.com/rikvdkleij/intellij-haskell), modernized for current IntelliJ IDEA (2025.2 / 2026.1) and re-platformed onto [Haskell Language Server](https://haskell-language-server.readthedocs.io/) (HLS) over LSP.
 
-When I was learning Haskell, I missed the nice features of IntelliJ IDEA. My first approach
-was to use the default way of creating an IntelliJ plugin by defining a grammar and a lexer according to
-[Haskell report](http://www.haskell.org/onlinereport/haskell2010/haskellch10.html). That didn't work out because I could not define all the recursion. 
-Then I decided to use grammar and lexer definitions only for tokenizing and parsing Haskell code, and not for syntax checking the code. This is needed for syntax highlighting, all kinds of navigation, and so on.
-Further Haskell language support is provided with the help of external tools.
+The original plugin ran its own Stack/GHCi REPL processes in the background to provide diagnostics, type info, completion, and navigation. This fork retires that bespoke layer and routes language intelligence through HLS via [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij), keeping the native IntelliJ PSI for structure-only features (lexer highlighting, structure view, folding, brace matching).
 
-This plugin depends mainly on Stack. It can create new Stack projects and import existing Stack projects.
+# Requirements
 
-GHC 8.2.2 and later is supported.
-
-Any feedback is welcomed!!
-
-# Installing the plugin
-You can install this plugin using the [Jetbrains plugin repository](https://plugins.jetbrains.com/idea/plugin/8258-intellij-haskell):
-  `Settings`/`Plugins`/`Browse repositories`/IntelliJ-Haskell`
-
-# Installing the latest beta of the plugin
-To try out the latest beta version one can install the plugin by adding `https://plugins.jetbrains.com/plugins/alpha/8258` as a custom plugin repository in `Settings`/`Plugins`/`Browse repositories`/`Manage repositories`.
- 
-An alternative way to install the latest beta version is to download `IntelliJ-haskell.zip` from [releases](https://github.com/rikvdkleij/intellij-haskell/releases) and apply `Install plugin from disk` in `Settings`/`Plugins`.
-
+- IntelliJ IDEA 2025.2 or newer (Community or Ultimate). Tested against `ideaIC-252.28539.54` and `ideaIC-261.x`.
+- [Stack](https://docs.haskellstack.org/) for project builds and SDK detection.
+- [ghcup](https://www.haskell.org/ghcup/) on `PATH` for automatic HLS installation, or HLS already installed and pointed at via plugin settings.
 
 # Features
-- Syntax highlighting;
-- Error/warning highlighting;
-- Haskell Problems View. This tool window displays GHC messages for the currently edited files;
-- Find usages of identifiers;
-- Resolve references to identifiers;
-- Code completion;
-- In-place rename identifiers;
-- View type info from (selected) expression;
-- View sticky type info;
-- View expression info;
-- View quick documentation;
-- View quick definition;
-- Structure view;
-- Goto to declaration (called `Navigate`>`Declaration` in IntelliJ menu);
-- Navigate to declaration (called `Navigate`>`Class` in IntelliJ menu);
-- Navigate to an identifier (called `Navigate`>` Symbol` in IntelliJ menu);
-- Goto instance declaration (called `Navigate`>`Instance Declaration` in IntelliJ menu);
-- Navigate to declaration or identifier powered by Hoogle (called `Navigate`>`Navigation by Hoogle` in IntelliJ menu);
-- Inspection by HLint;
-- Quick fixes for HLint suggestions;
-- Show error action to view formatted messages. Useful in case message consists of multiple lines (Ctrl-F10, Meta-F10 on Mac OSX);
-- Intention actions to add language extension (depends on compiler error), add top-level type signature (depends on compiler warning);
-- Intention action to select which module to import if the identifier is not in scope;
-- Default code formatting by `ormolu`. Alternatively by `stylish-Haskell`.
-- Code completion for project module names, language extensions, and package names in Cabal file;
-- Running REPL, tests, and executables via `Run Configurations`;
-- Smart code completion on typed holes (since GHC 8.4);
 
+Provided by HLS over LSP (LSP4IJ plumbing):
+- Diagnostics from GHC + HLint, with quick-fixes via `textDocument/codeAction` (Alt+Enter).
+- Hover (kind/type signature + Haddock) and Quick Documentation.
+- Completion with type-on-resolve.
+- Goto declaration (Cmd+B / Ctrl+B) — see *Known limitations* below.
+- Find Usages, Rename, Implementation and Type Definition lookups.
+- Code formatting (Cmd+Opt+L / Ctrl+Alt+L) via ormolu by default; configurable through HLS.
 
+Provided natively by the plugin:
+- Lexer-based syntax highlighting (color settings page included).
+- Structure view, brace matching, folding, code-block commenting.
+- Stack SDK detection and project import.
+- Run Configurations: GHCi console, run, test.
+- Cabal file completion (module names, language extensions, package names).
+- Hoogle integration: **Hoogle For It** action (Shift+Ctrl+H) and **(Re)Build Hoogle database** menu item.
+- Ormolu and Stylish Haskell as explicit menu actions (alongside HLS-driven `Reformat Code`).
+- Auto-install of Hoogle / Ormolu / Stylish Haskell via Stack on first project open; HLS via `ghcup install hls`.
+
+# Installation
+
+This fork isn't published to the JetBrains Marketplace. To use it:
+
+1. Clone this repo.
+2. Build the plugin: `sbt packageArtifact` (requires JDK 21).
+3. In IntelliJ: `Settings` → `Plugins` → gear icon → `Install Plugin from Disk…` and point at `target/plugin/IntelliJ-Haskell/lib/IntelliJ Haskell.jar` (or zip the `target/plugin/IntelliJ-Haskell/` directory and install that).
+4. Also install [LSP4IJ](https://plugins.jetbrains.com/plugin/23257-lsp4ij) from the Marketplace. The plugin declares a hard dependency on it.
 
 # Getting started
-- If you don't already have IntelliJ, [download it](https://www.jetbrains.com/idea/download/) - the Community Edition is sufficient.
-- Install this plugin using the [Jetbrains plugin repository](https://plugins.jetbrains.com/idea/plugin/8258-intellij-haskell): `Settings`/`Plugins`/`Browse repositories`/IntelliJ-Haskell`. Make sure no other Haskell plugin is installed in IntelliJ;
-- Install the latest version of [Stack](https://github.com/commercialhaskell/stack); use `stack upgrade` to confirm you are on the latest version.
-- Setup the project:
-  - Make sure your Stack project builds without errors. Preferably by using: `stack build --test --haddock --no-haddock-hyperlink-source`;
-  - After your project is built successfully, import an existing project by:
-    - Inside IntelliJ use `File`>`New`>`Project from Existing Sources...` from the IntelliJ menu;
-    - In the `Welcome to IntelliJ IDEA` dialog use `Open or Import Project`; 
-  - In the `New Project` wizard select `Import project from external model` and check `Haskell Stack`;
-  - On the next page of wizard configure `Project SDK` by configuring `Haskell Tool Stack` by selecting a path to `stack` binary, e.g. `/usr/local/bin/stack` (you can use `which stack` on Linux or macOS or `where stack` on windows to find the path);
-  - Finish wizard and project will be opened;
-  - Wizard will automatically configure which folders are sources, test and which to exclude;
-  - Plugin will automatically build Haskell Tools (HLint, Hoogle, Ormolu, and Stylish Haskell) to prevent incompatibility issues
-  - Check `Project structure`>`Project settings`>`Modules` which folders to exclude (like `.stack-work` and `dist`) and which folders are `Source` and `Test` (normally `src` and `test`);
-  - Plugin will automatically download library sources. They will be added as source libraries to module(s).
-  - After changing the Cabal file and/or `stack.yaml` use `Haskell`>`Haskell`>`Update Settings and Restart REPLs` to download missing library sources and update the project settings;
-  - The `Event Log` will display what's going on in the background. Useful when something fails. It's disabled by default. 
-    It can be enabled by checking the `Haskell Log` checkbox in the `Event Log`>`Settings` or `Settings`>`Appearance & Behavior`>`Notifications`;    
 
-
-# Remarks
-1. IntelliJ's Build action is not (yet) implemented. Project is built when the project is opened and when needed, e.g. when library code is changed and the user navigates to test code;
-2. `About Haskell Project` in `Help` menu shows which Haskell GHC/tools are used by the plugin for the project;
-3. GHC depends on `libtinfo-dev`. On Ubuntu you can install it with `sudo apt-get install libtinfo-dev`;
-4. Haskell tools depend on `libgmp3-dev zlib1g-dev`. On Ubuntu you can install them with `sudo apt-get install libgmp3-dev zlib1g-dev`;
-5. Cabal's internal libraries are not (yet) supported;
-6. Cabal's common stanzas are not (yet) supported;
-7. The Haskell tools are built in an IntelliJ sandbox with LTS-16. So they have no dependency on Stackage resolvers in your projects. After Stackage LTS-13 minor updates one can use `Haskell`>`Update Haskell tools`;
-8. Stack REPLs are running in the background. You can restart them by `Haskell`>`Update Settings and Restart REPLs`.
+1. Configure a *Haskell Tool Stack* SDK once per IDE: `Project Structure` → `SDKs` → `+` → `Haskell Tool Stack`, pointing at your `stack` binary.
+2. Import an existing project via `File` → `New` → `Project from Existing Sources…` and select `Haskell Stack` in the wizard, or create a new project via `File` → `New` → `Project` → `Haskell`.
+3. On first open the plugin will:
+   - Resolve HLS: user-set path → `haskell-language-server-wrapper` on `PATH` → `ghcup install hls --set` if neither is found.
+   - Auto-install Hoogle, Ormolu, and Stylish Haskell via `stack install` if not already present.
+   - Download library sources and add them as source roots to your modules.
+4. Open a `.hs` file. HLS will spawn (visible in the **Language Servers** tool window). Once the cradle finishes loading you'll see diagnostics, hover, completion, and so on.
 
 # Known limitations
 
 ## Goto definition (Cmd+B / Ctrl+B) doesn't jump to library sources
 
-Language intelligence is provided by [Haskell Language Server](https://haskell-language-server.readthedocs.io/) over LSP. HLS responds with the exact source location for *project-local* symbols, but for symbols from external libraries (e.g. `putMVar` in `Control.Concurrent`) it sees only the `.hi` interface files — hover and type information work, but `textDocument/definition` returns an empty list and IntelliJ shows "Cannot find declaration to go to".
+HLS's `textDocument/definition` resolves project-local symbols but, on a Stack cradle, sees only `.hi` interface files for external library symbols (e.g. `putMVar` in `Control.Concurrent`). Hover and type info still work; navigation returns empty.
 
-This is the standard HLS-on-Stack behavior, not specific to this plugin. To enable navigation into library source, configure a [`hie.yaml`](https://github.com/haskell/hie-bios#explicit-configuration) cradle that includes library packages with their sources, or switch the project to a `cabal.project` setup with `documentation: True` and the appropriate `source-repository-package` entries so HLS can find the unpacked sources on disk.
+Workarounds:
+- Configure a [`hie.yaml`](https://github.com/haskell/hie-bios#explicit-configuration) cradle that includes library packages with their sources, or switch to a `cabal.project` layout with `documentation: True` and the relevant `source-repository-package` entries so HLS finds unpacked sources on disk.
+- For ad-hoc lookups, use **Hoogle For It** (Shift+Ctrl+H) to jump to the symbol's online documentation, which links through to Hackage source.
 
-A pragmatic workaround for occasional lookups: use **Hoogle For It** (Shift+Ctrl+H) to jump to the symbol's online documentation, which links to the source on Hackage.
+## HLS plugin-rule transient errors during cradle warmup
 
-If you want to contribute to this project, read [the contributing guideline](CONTRIBUTING.md).
+LSP4IJ surfaces every server-side error as a notification. HLS's import-lens (codeLens) and inlay-hint plugins occasionally fail with `Rule Failed: ImportActions` / `Rule Failed: GhcSession` while the cradle is still settling. This fork disables both features on the LSP4IJ client side (they're informational decorations) to silence the noise. Core diagnostics / hover / completion / navigation / code-actions / formatting are unaffected.
+
+# Architecture notes
+
+- LSP server factory: `intellij.haskell.lsp.HaskellLspServerFactory` (registered via the LSP4IJ extension point). Spawns `haskell-language-server-wrapper --lsp` with the project base dir as working directory.
+- Project structure metadata (cabal stanzas, component targets, source dirs, build-depends) is parsed once at init by `intellij.haskell.external.repl.StackReplsManager` — kept under the legacy name for now; no Stack REPL processes are spawned.
+- The native PSI tree (lexer + parser generated by JFlex + Grammar-Kit under `gen/`) is unchanged from upstream and powers the IntelliJ-side structure features.
+
+If you want to contribute, read [the contributing guideline](CONTRIBUTING.md).
