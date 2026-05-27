@@ -20,6 +20,7 @@ import com.intellij.codeInsight.actions.ReformatCodeAction
 import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnActionEvent, Presentation}
 import com.intellij.openapi.project.Project
 import intellij.haskell.external.component.StackProjectManager
+import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util.{HaskellEditorUtil, HaskellFileUtil}
 
 class HaskellReformatAction extends ReformatCodeAction {
@@ -32,7 +33,7 @@ class HaskellReformatAction extends ReformatCodeAction {
   override def update(actionEvent: AnActionEvent): Unit = {
     ActionUtil.findActionContext(actionEvent).foreach(actionContext => {
       val psiFile = actionContext.psiFile
-      if (HaskellFileUtil.isHaskellFile(psiFile)) {
+      if (HaskellFileUtil.isHaskellFile(psiFile) && !HaskellSettingsState.useHlsLsp) {
         HaskellEditorUtil.enableExternalAction(actionEvent, (project: Project) => StackProjectManager.isOrmoluAvailable(project).isDefined)
       } else {
         super.update(actionEvent)
@@ -43,7 +44,7 @@ class HaskellReformatAction extends ReformatCodeAction {
   override def actionPerformed(actionEvent: AnActionEvent): Unit = {
     ActionUtil.findActionContext(actionEvent).foreach(actionContext => {
       val psiFile = actionContext.psiFile
-      if (HaskellFileUtil.isHaskellFile(psiFile)) {
+      if (HaskellFileUtil.isHaskellFile(psiFile) && !HaskellSettingsState.useHlsLsp) {
         OrmoluReformatAction.reformat(psiFile)
       } else {
         super.actionPerformed(actionEvent)
