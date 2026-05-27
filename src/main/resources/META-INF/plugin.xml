@@ -628,7 +628,6 @@
         <notificationGroup id="Haskell Balloon" displayType="BALLOON"/>
         <applicationService serviceImplementation="intellij.haskell.settings.HaskellSettingsPersistentStateComponent"/>
         <framework.type implementation="intellij.haskell.framework.HaskellFrameworkType"/>
-        <lang.importOptimizer language="Haskell" implementationClass="intellij.haskell.editor.HaskellImportOptimizer"/>
 
         <!-- Module -->
         <internalFileTemplate name="Haskell Module"/>
@@ -650,7 +649,6 @@
         <!--<statementUpDownMover implementation="intellij.haskell.editor.HaskellStatementMover"/>-->
 
         <checkinHandlerFactory implementation="intellij.haskell.action.HaskellReformatCheckinHandlerFactory"/>
-        <checkinHandlerFactory implementation="intellij.haskell.action.HaskellOptimizeImportsCheckinHandlerFactory"/>
 
         <targetElementEvaluator language="Haskell"
                                 implementationClass="intellij.haskell.navigation.HaskellTargetElementUtil2"/>

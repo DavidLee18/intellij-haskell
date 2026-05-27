@@ -25,7 +25,7 @@ import com.intellij.openapi.compiler.{CompileContext, CompileTask, CompilerMessa
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
-import com.intellij.openapi.vfs.{CharsetToolkit, VfsUtil}
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.util.WaitFor
 import intellij.haskell.HaskellNotificationGroup
 import intellij.haskell.sdk.HaskellSdkType
@@ -162,7 +162,7 @@ object StackCommandLine {
         None
     }).map(process => {
 
-      val handler = new BaseOSProcessHandler(process, cmd.getCommandLineString, CharsetToolkit.getDefaultSystemCharset)
+      val handler = new BaseOSProcessHandler(process, cmd.getCommandLineString, java.nio.charset.Charset.defaultCharset)
 
       val compilerTask = new CompilerTask(project, description, false, false, true, true)
       val compileTask = new CompileTask {

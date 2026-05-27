@@ -1,6 +1,6 @@
 package intellij.haskell
 
-import com.intellij.application.options.PathMacrosImpl
+import com.intellij.openapi.application.PathMacros
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.FileUtil
@@ -75,6 +75,9 @@ object GlobalInfo {
   }
 
   def pathVariables: java.util.Map[String, String] = {
-    PathMacrosImpl.getInstanceEx.getUserMacros
+    val macros = PathMacros.getInstance
+    val result = new java.util.HashMap[String, String]()
+    macros.getUserMacroNames.forEach(n => Option(macros.getValue(n)).foreach(v => result.put(n, v)))
+    result
   }
 }
