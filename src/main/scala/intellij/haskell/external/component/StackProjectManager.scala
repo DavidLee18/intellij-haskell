@@ -251,7 +251,7 @@ object StackProjectManager {
           installHaskellTools(project, update = false)
         }
 
-        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Building project, starting REPL(s) and preloading cache", false, null) {
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Building project and preloading cache", false, null) {
 
           def run(progressIndicator: ProgressIndicator): Unit = {
             try {

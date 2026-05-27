@@ -19,10 +19,6 @@ package intellij.haskell.settings
 object HaskellSettingsState {
   private def state = HaskellSettingsPersistentStateComponent.getInstance().getState
 
-  def getReplTimeout: Integer = {
-    state.replTimeout
-  }
-
   def useSystemGhc: Boolean = {
     state.useSystemGhc
   }

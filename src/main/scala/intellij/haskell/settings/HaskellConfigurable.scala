@@ -27,7 +27,6 @@ import javax.swing.event.DocumentEvent
 class HaskellConfigurable extends Configurable {
   private var isModifiedByUser = false
   private val useSystemGhcToggle = new JCheckBox
-  private val replTimeoutField = new JTextField
   private val afterRestartLabel = new JLabel("*) Changes will take effect after restarting IntelliJ")
   private val newProjectTemplateNameField = new JTextField
   private val cachePathField = new JTextField
@@ -66,7 +65,6 @@ class HaskellConfigurable extends Configurable {
       isModifiedByUser = true
     }
 
-    replTimeoutField.getDocument.addDocumentListener(docListener)
     newProjectTemplateNameField.getDocument.addDocumentListener(docListener)
     cachePathField.getDocument.addDocumentListener(docListener)
     hooglePathField.getDocument.addDocumentListener(docListener)
@@ -125,7 +123,6 @@ class HaskellConfigurable extends Configurable {
 
     val labeledControls = List(
       (new JLabel(DefaultGhcOptions), defaultGhcOptionsField),
-      (new JLabel(ReplTimout), replTimeoutField),
       (new JLabel(ExtraStackArguments), extraStackArgumentsField),
       (new JLabel(""), afterRestartLabel),
       (new JLabel(NewProjectTemplateName), newProjectTemplateNameField),
@@ -160,14 +157,11 @@ class HaskellConfigurable extends Configurable {
   }
 
   override def apply(): Unit = {
-    val validREPLTimeout = validateREPLTimeout()
-
     val state = HaskellSettingsPersistentStateComponent.getInstance().getState
 
     validateCustomTools()
 
     state.defaultGhcOptions = defaultGhcOptionsField.getText
-    state.replTimeout = validREPLTimeout
     state.useSystemGhc = useSystemGhcToggle.isSelected
     state.newProjectTemplateName = newProjectTemplateNameField.getText
     state.cachePath = cachePathField.getText
@@ -178,19 +172,6 @@ class HaskellConfigurable extends Configurable {
     state.extraStackArguments = extraStackArgumentsField.getText
     state.useHlsLsp = useHlsLspToggle.isSelected
     state.hlsPath = hlsPathField.getText
-  }
-
-  private def validateREPLTimeout(): Integer = {
-    val timeout = try {
-      Integer.valueOf(replTimeoutField.getText)
-    } catch {
-      case _: NumberFormatException => throw new ConfigurationException(s"Invalid REPL timeout")
-    }
-
-    if (timeout <= 0) {
-      throw new ConfigurationException(s"REPL timeout should be larger than 0")
-    }
-    timeout
   }
 
   private def checkFileExists(path: String): Unit = {
@@ -222,7 +203,6 @@ class HaskellConfigurable extends Configurable {
     val state = HaskellSettingsPersistentStateComponent.getInstance().getState
     defaultGhcOptionsField.setText(state.defaultGhcOptions)
     useSystemGhcToggle.setSelected(state.useSystemGhc)
-    replTimeoutField.setText(state.replTimeout.toString)
     newProjectTemplateNameField.setText(state.newProjectTemplateName)
     cachePathField.setText(state.cachePath)
     hooglePathField.setText(state.hooglePath)
@@ -236,8 +216,7 @@ class HaskellConfigurable extends Configurable {
 }
 
 object HaskellConfigurable {
-  final val DefaultGhcOptions = "Default REPL GHC options"
-  final val ReplTimout = "Background REPL timeout in seconds *"
+  final val DefaultGhcOptions = "Default GHC options"
   final val NewProjectTemplateName = "Template name for new project"
   final val CachePath = "Cache path *"
   final val BuildToolsUsingSystemGhc = "Build tools using system GHC *"
