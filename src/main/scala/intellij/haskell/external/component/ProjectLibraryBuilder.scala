@@ -22,7 +22,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager, Task}
 import com.intellij.openapi.project.Project
 import intellij.haskell.HaskellNotificationGroup
-import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.component.HaskellComponentsManager.ComponentTarget
 import intellij.haskell.external.execution.StackCommandLine
 import intellij.haskell.cabal.LibType
@@ -96,10 +95,8 @@ object ProjectLibraryBuilder {
           openNonLibFiles.map(_._2).foreach { vf =>
             HaskellFileUtil.convertToHaskellFileInReadAction(project, vf).toOption match {
               case Some(psiFile) =>
-                val haskellProblemsView = HaskellProblemsView.getInstance(project)
-                HaskellFileUtil.findVirtualFile(psiFile).foreach(haskellProblemsView.clearOldMessages)
                 HaskellEditorUtil.restartDaemonCodeAnalyzerForFile(psiFile)
-              case None => HaskellNotificationGroup.logInfoEvent(project, s"Could not invalidate cache and restart daemon analyzer for file ${vf.getName}")
+              case None => HaskellNotificationGroup.logInfoEvent(project, s"Could not restart daemon analyzer for file ${vf.getName}")
             }
           }
         }

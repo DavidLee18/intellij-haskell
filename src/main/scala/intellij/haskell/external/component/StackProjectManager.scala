@@ -32,7 +32,6 @@ import com.intellij.psi.{PsiTreeChangeAdapter, PsiTreeChangeEvent}
 import com.intellij.ui.EditorNotifications
 import intellij.haskell.HTool.{Hls, Hoogle, Ormolu, StylishHaskell}
 import intellij.haskell.external.execution.CommandLine
-import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.execution.StackCommandLine
 import intellij.haskell.cabal.LibType
 import intellij.haskell.external.repl.StackReplsManager
@@ -267,8 +266,6 @@ object StackProjectManager {
                 ApplicationManager.getApplication.runReadAction(ScalaUtil.runnable {
                   getStackProjectManager(project).foreach(_.initStackReplsManager())
                 })
-
-                HaskellProblemsView.getInstance(project).clear()
 
                 progressIndicator.setText("Busy updating project and module settings")
                 val projectPath = project.getBasePath
