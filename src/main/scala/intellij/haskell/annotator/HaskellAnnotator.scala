@@ -40,6 +40,7 @@ import intellij.haskell.external.component._
 import intellij.haskell.external.execution._
 import intellij.haskell.psi._
 import intellij.haskell.runconfig.console.HaskellConsoleView
+import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.ui.EnterNameDialog
 import intellij.haskell.util._
 import intellij.haskell.{HaskellFile, HaskellFileType, HaskellNotificationGroup}
@@ -51,7 +52,9 @@ import scala.jdk.CollectionConverters._
 class HaskellAnnotator extends ExternalAnnotator[PsiFile, CompilationResult] {
 
   override def collectInformation(psiFile: PsiFile, editor: Editor, hasErrors: Boolean): PsiFile = {
-    if (HaskellConsoleView.isConsoleFile(psiFile) || !HaskellProjectUtil.isSourceFile(psiFile)) {
+    if (HaskellSettingsState.useHlsLsp) {
+      null
+    } else if (HaskellConsoleView.isConsoleFile(psiFile) || !HaskellProjectUtil.isSourceFile(psiFile)) {
       null
     } else if (StackProjectManager.isInitializing(psiFile.getProject)) {
       val project = psiFile.getProject

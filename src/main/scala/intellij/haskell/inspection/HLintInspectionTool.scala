@@ -26,6 +26,7 @@ import com.intellij.util.WaitFor
 import intellij.haskell.HaskellNotificationGroup
 import intellij.haskell.external.component.HLintRefactoringsParser._
 import intellij.haskell.external.component.{HLintComponent, HLintInfo, HLintRefactoringsParser}
+import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util._
 
 import scala.concurrent.duration._
@@ -37,6 +38,7 @@ class HLintInspectionTool extends LocalInspectionTool {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   override def checkFile(psiFile: PsiFile, manager: InspectionManager, isOnTheFly: Boolean): Array[ProblemDescriptor] = {
+    if (HaskellSettingsState.useHlsLsp) return Array.empty
     val project = psiFile.getProject
     HaskellNotificationGroup.logInfoEvent(project, s"HLint inspection is started for file ${psiFile.getName}")
 
