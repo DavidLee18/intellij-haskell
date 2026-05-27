@@ -86,4 +86,14 @@ An alternative way to install the latest beta version is to download `IntelliJ-h
 7. The Haskell tools are built in an IntelliJ sandbox with LTS-16. So they have no dependency on Stackage resolvers in your projects. After Stackage LTS-13 minor updates one can use `Haskell`>`Update Haskell tools`;
 8. Stack REPLs are running in the background. You can restart them by `Haskell`>`Update Settings and Restart REPLs`.
 
+# Known limitations
+
+## Goto definition (Cmd+B / Ctrl+B) doesn't jump to library sources
+
+Language intelligence is provided by [Haskell Language Server](https://haskell-language-server.readthedocs.io/) over LSP. HLS responds with the exact source location for *project-local* symbols, but for symbols from external libraries (e.g. `putMVar` in `Control.Concurrent`) it sees only the `.hi` interface files — hover and type information work, but `textDocument/definition` returns an empty list and IntelliJ shows "Cannot find declaration to go to".
+
+This is the standard HLS-on-Stack behavior, not specific to this plugin. To enable navigation into library source, configure a [`hie.yaml`](https://github.com/haskell/hie-bios#explicit-configuration) cradle that includes library packages with their sources, or switch the project to a `cabal.project` setup with `documentation: True` and the appropriate `source-repository-package` entries so HLS can find the unpacked sources on disk.
+
+A pragmatic workaround for occasional lookups: use **Hoogle For It** (Shift+Ctrl+H) to jump to the symbol's online documentation, which links to the source on Hackage.
+
 If you want to contribute to this project, read [the contributing guideline](CONTRIBUTING.md).
