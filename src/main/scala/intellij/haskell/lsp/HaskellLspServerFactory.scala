@@ -3,8 +3,9 @@ package intellij.haskell.lsp
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiFile
 import com.redhat.devtools.lsp4ij.LanguageServerFactory
-import com.redhat.devtools.lsp4ij.client.features.LSPClientFeatures
+import com.redhat.devtools.lsp4ij.client.features.{LSPClientFeatures, LSPCodeLensFeature, LSPInlayHintFeature}
 import com.redhat.devtools.lsp4ij.server.{CannotStartProcessException, OSProcessStreamConnectionProvider, StreamConnectionProvider}
 import intellij.haskell.external.component.StackProjectManager
 import intellij.haskell.settings.HaskellSettingsState
@@ -17,11 +18,29 @@ class HaskellLspServerFactory extends LanguageServerFactory {
     new HaskellLspConnectionProvider(project)
   }
 
-  override def createClientFeatures(): LSPClientFeatures = new HaskellLspClientFeatures
+  override def createClientFeatures(): LSPClientFeatures = {
+    val features = new HaskellLspClientFeatures
+    features.setInlayHintFeature(new DisabledInlayHintFeature)
+    features.setCodeLensFeature(new DisabledCodeLensFeature)
+    features
+  }
 }
 
 private class HaskellLspClientFeatures extends LSPClientFeatures {
   override def isEnabled(file: VirtualFile): Boolean = HaskellSettingsState.useHlsLsp
+}
+
+// HLS's importLens (textDocument/codeLens) and explicitly-resolved inlay hints
+// repeatedly fail with "Rule Failed: ImportActions" / "Rule Failed: GhcSession"
+// while the cradle is still settling, surfacing as error popups in LSP4IJ.
+// Both features are informational decorations; disabling them silences the
+// noise without losing any core diagnostic/nav/hover behavior.
+private class DisabledInlayHintFeature extends LSPInlayHintFeature {
+  override def isInlayHintSupported(file: PsiFile): Boolean = false
+}
+
+private class DisabledCodeLensFeature extends LSPCodeLensFeature {
+  override def isCodeLensSupported(file: PsiFile): Boolean = false
 }
 
 private class HaskellLspConnectionProvider(project: Project) extends OSProcessStreamConnectionProvider {
