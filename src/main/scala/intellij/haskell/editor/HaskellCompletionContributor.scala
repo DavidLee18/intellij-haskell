@@ -32,6 +32,7 @@ import intellij.haskell.external.component._
 import intellij.haskell.psi.HaskellTypes._
 import intellij.haskell.psi._
 import intellij.haskell.runconfig.console.{HaskellConsoleView, HaskellConsoleViewMap}
+import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util._
 import intellij.haskell.{HaskellFile, HaskellParserDefinition}
 import com.intellij.openapi.util.text.StringUtil
@@ -285,7 +286,13 @@ class HaskellCompletionContributor extends CompletionContributor {
 
   extend(CompletionType.SMART, PlatformPatterns.psiElement(), smartProvider)
 
+  override def fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet): Unit = {
+    if (HaskellSettingsState.useHlsLsp) return
+    super.fillCompletionVariants(parameters, result)
+  }
+
   override def beforeCompletion(context: CompletionInitializationContext): Unit = {
+    if (HaskellSettingsState.useHlsLsp) return
     val psiFile = context.getFile
     val contextElement = Option(psiFile.findElementAt(context.getStartOffset - 1))
     contextElement match {
