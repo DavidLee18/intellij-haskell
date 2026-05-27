@@ -22,6 +22,7 @@ import com.intellij.psi.{PsiElement, PsiFile, PsiManager}
 import intellij.haskell.navigation.HaskellReference
 import intellij.haskell.psi.HaskellPsiUtil
 import intellij.haskell.psi.impl.HaskellPsiImplUtil
+import intellij.haskell.settings.HaskellSettingsState
 import intellij.haskell.util.{HaskellEditorUtil, HaskellProjectUtil, HtmlElement, StringUtil}
 
 class HaskellDocumentationProvider extends AbstractDocumentationProvider {
@@ -29,6 +30,7 @@ class HaskellDocumentationProvider extends AbstractDocumentationProvider {
   private final val DoubleNbsp = HtmlElement.Nbsp + HtmlElement.Nbsp
 
   override def getQuickNavigateInfo(element: PsiElement, originalElement: PsiElement): String = {
+    if (HaskellSettingsState.useHlsLsp) return null
     val project = Option(element).map(_.getProject)
     if (project.exists(p => !StackProjectManager.isInitializing(p))) {
       (Option(element.getContainingFile), Option(originalElement)) match {
@@ -62,6 +64,7 @@ class HaskellDocumentationProvider extends AbstractDocumentationProvider {
   private final val Separator = HtmlElement.Break + HtmlElement.Break + HtmlElement.HorizontalLine + HtmlElement.Break
 
   override def generateDoc(element: PsiElement, originalElement: PsiElement): String = {
+    if (HaskellSettingsState.useHlsLsp) return null
     ProgressManager.checkCanceled()
 
     val project = Option(element).map(_.getProject)
