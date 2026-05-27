@@ -5,21 +5,35 @@
     <vendor email="rikvdkleij@gmail.com">Rik van der Kleij</vendor>
 
     <description><![CDATA[
-        <p> Haskell language support.</p>
+        <p>Haskell language support for IntelliJ IDEA, routed through
+        <a href="https://haskell-language-server.readthedocs.io/">Haskell Language Server</a>
+        over LSP via
+        <a href="https://plugins.jetbrains.com/plugin/23257-lsp4ij">LSP4IJ</a>.
+        Fork of <a href="https://github.com/rikvdkleij/intellij-haskell">rikvdkleij/intellij-haskell</a>
+        modernized for current IntelliJ versions and re-platformed on HLS.</p>
         <ul>
-            <li>This plugin depends mainly on Stack.</li>
-            <li>It can create new Stack projects and import existing Stack projects.</li>
-            <li>Please <a href="https://github.com/rikvdkleij/intellij-haskell/blob/master/README.md">README</a></li>
+            <li>Diagnostics, hover, completion, navigation, code actions, formatting via HLS.</li>
+            <li>Native syntax highlighting, structure view, brace matching, folding.</li>
+            <li>Stack project import + SDK detection; run / test / GHCi-console configurations.</li>
+            <li>Hoogle integration and tool auto-install via Stack + ghcup.</li>
+            <li>See <a href="https://github.com/DavidLee18/intellij-haskell/blob/master/README.md">README</a> for setup.</li>
         </ul>
-
-        <p>
-            <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=H6QKQKFRKJBF2&item_name=IntelliJ-Haskell&currency_code=EUR">
-                <img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif">
-            </a>
-        </p>
     ]]></description>
 
     <change-notes><![CDATA[
+        <p>Phase 3 (DavidLee18 fork)</p>
+        <ul>
+            <li>Re-platformed onto HLS via LSP4IJ. The native Stack/GHCi REPL pipeline
+                that drove diagnostics, hover, completion, navigation, and code actions
+                has been removed in favour of `textDocument/*` LSP requests.</li>
+            <li>HLS is auto-resolved on first project open: user-set path -> PATH lookup ->
+                `ghcup install hls --set` as fallback.</li>
+            <li>Removed: HLint inspection (HLS bundles HLint), REPL-driven Show Type /
+                Show Info / Goto Instance Declaration / Restart REPLs / Hoogle Navigation /
+                Case Split intention - all now provided either by HLS or no longer
+                needed under LSP.</li>
+            <li>~6000 LOC removed across the external/repl/ + external/component/ packages.</li>
+        </ul>
         <p>1.0.0-beta88</p>
         <ul>
             <li>Various improvements and fixes</li>
