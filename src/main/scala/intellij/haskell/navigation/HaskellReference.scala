@@ -138,7 +138,6 @@ class HaskellReference(element: HaskellNamedElement, textRange: TextRange) exten
     }
   }
 
-  /** Implemented in [[intellij.haskell.editor.HaskellCompletionContributor]] * */
   override def getVariants: Array[AnyRef] = {
     Array()
   }

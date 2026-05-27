@@ -548,12 +548,9 @@
                    implementationClass="intellij.haskell.cabal.highlighting.CabalAnnotator"/>
 
         <!-- Completion -->
-        <completion.contributor language="Haskell"
-                                implementationClass="intellij.haskell.editor.HaskellCompletionContributor"/>
         <completion.contributor
                 language="Cabal"
                 implementationClass="intellij.haskell.cabal.completion.CabalCompletionContributor"/>
-        <lookup.charFilter implementation="intellij.haskell.editor.HaskellCompletionCharFilter"/>
         <psi.referenceContributor language="Haskell" implementation="intellij.haskell.psi.HaskellReferenceContributor"/>
         <liveTemplateContext contextId="HASKELL_FILE"
                              implementation="intellij.haskell.editor.HaskellTemplateContextType"/>
