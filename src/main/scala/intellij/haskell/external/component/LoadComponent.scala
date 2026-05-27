@@ -19,7 +19,6 @@ package intellij.haskell.external.component
 import com.intellij.codeInsight.documentation.DocumentationManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.psi.PsiFile
-import intellij.haskell.annotator.HaskellAnnotator
 import intellij.haskell.external.execution.{CompilationResult, HaskellCompilationResultHelper}
 import intellij.haskell.external.repl.ProjectStackRepl.Loaded
 import intellij.haskell.external.repl._
@@ -53,14 +52,7 @@ private[component] object LoadComponent {
       ProjectLibraryBuilder.checkLibraryBuild(project, projectRepl.projectReplTargets)
       val moduleName = HaskellPsiUtil.findModuleName(psiFile)
 
-      {
-        if (HaskellAnnotator.getNotLoadedFiles(project).contains(psiFile)) {
-          HaskellAnnotator.removeNotLoadedFile(psiFile)
-          projectRepl.load(psiFile, fileModified, moduleName, forceNoReload = true)
-        } else {
-          projectRepl.load(psiFile, fileModified, moduleName)
-        }
-      } match {
+      projectRepl.load(psiFile, fileModified, moduleName) match {
         case Some((loadOutput, loadFailed)) =>
           ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
 

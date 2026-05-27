@@ -540,8 +540,6 @@
         <testCreator language="Haskell" implementationClass="intellij.haskell.testIntegration.HaskellTestCreator"/>
 
         <!-- Annotator -->
-        <externalAnnotator language="Haskell"
-                           implementationClass="intellij.haskell.annotator.HaskellAnnotator"/>
         <annotator language="Haskell"
                    implementationClass="intellij.haskell.highlighter.HaskellHighlightingAnnotator"/>
         <annotator language="Cabal"

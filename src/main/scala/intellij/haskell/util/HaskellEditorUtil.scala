@@ -19,8 +19,10 @@ package intellij.haskell.util
 import java.awt.Point
 import java.awt.event.{MouseEvent, MouseMotionAdapter}
 
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.hint.{HintManager, HintManagerImpl, HintUtil}
 import com.intellij.openapi.actionSystem.{AnActionEvent, CommonDataKeys}
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.project.Project
@@ -43,6 +45,14 @@ import scala.jdk.CollectionConverters._
 object HaskellEditorUtil {
 
   final val HaskellSupportIsNotAvailableWhileInitializingText = "Haskell support is not available while project is initializing"
+
+  def restartDaemonCodeAnalyzerForFile(psiFile: PsiFile): Unit = {
+    ApplicationManager.getApplication.invokeLater { () =>
+      if (!psiFile.getProject.isDisposed) {
+        DaemonCodeAnalyzer.getInstance(psiFile.getProject).restart(psiFile)
+      }
+    }
+  }
 
   def enableExternalAction(actionEvent: AnActionEvent, enableCondition: Project => Boolean): Unit = {
     Option(actionEvent.getProject) match {

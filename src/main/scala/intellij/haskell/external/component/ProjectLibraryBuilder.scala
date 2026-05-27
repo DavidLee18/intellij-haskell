@@ -22,14 +22,13 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.{ProgressIndicator, ProgressManager, Task}
 import com.intellij.openapi.project.Project
 import intellij.haskell.HaskellNotificationGroup
-import intellij.haskell.annotator.HaskellAnnotator
 import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.component.HaskellComponentsManager.ComponentTarget
 import intellij.haskell.external.execution.StackCommandLine
 import intellij.haskell.external.repl.StackRepl.LibType
 import intellij.haskell.external.repl.StackReplsManager
 import intellij.haskell.external.repl.StackReplsManager.ProjectReplTargets
-import intellij.haskell.util.{HaskellFileUtil, HaskellProjectUtil}
+import intellij.haskell.util.{HaskellEditorUtil, HaskellFileUtil, HaskellProjectUtil}
 
 import scala.jdk.CollectionConverters._
 
@@ -116,7 +115,7 @@ object ProjectLibraryBuilder {
               case Some(psiFile) =>
                 val haskellProblemsView = HaskellProblemsView.getInstance(project)
                 HaskellFileUtil.findVirtualFile(psiFile).foreach(haskellProblemsView.clearOldMessages)
-                HaskellAnnotator.restartDaemonCodeAnalyzerForFile(psiFile)
+                HaskellEditorUtil.restartDaemonCodeAnalyzerForFile(psiFile)
               case None => HaskellNotificationGroup.logInfoEvent(project, s"Could not invalidate cache and restart daemon analyzer for file ${vf.getName}")
             }
           }

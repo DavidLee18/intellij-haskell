@@ -22,9 +22,9 @@ import com.intellij.psi.{PsiDirectory, PsiElement, PsiFile}
 import com.intellij.refactoring.move.moveFilesOrDirectories.MoveFileHandler
 import com.intellij.usageView.UsageInfo
 import intellij.haskell.HaskellFile
-import intellij.haskell.annotator.HaskellAnnotator
 import intellij.haskell.external.component.HaskellComponentsManager
 import intellij.haskell.psi.HaskellPsiUtil
+import intellij.haskell.util.HaskellEditorUtil
 
 class HaskellMoveFileHandler extends MoveFileHandler {
   override def prepareMovedFile(file: PsiFile, moveDestination: PsiDirectory, oldToNewMap: util.Map[PsiElement, PsiElement]): Unit = {}
@@ -43,7 +43,7 @@ class HaskellMoveFileHandler extends MoveFileHandler {
     HaskellPsiUtil.invalidateModuleName(psiFile)
     HaskellComponentsManager.clearLoadedModule(psiFile)
     HaskellComponentsManager.invalidateFileInfos(psiFile)
-    HaskellAnnotator.restartDaemonCodeAnalyzerForFile(psiFile)
+    HaskellEditorUtil.restartDaemonCodeAnalyzerForFile(psiFile)
   }
 
 }

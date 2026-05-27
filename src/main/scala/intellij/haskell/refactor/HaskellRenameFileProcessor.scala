@@ -5,11 +5,10 @@ import java.util
 import com.intellij.psi.PsiElement
 import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
-import intellij.haskell.annotator.HaskellAnnotator
 import intellij.haskell.external.component.HaskellComponentsManager
 import intellij.haskell.psi.impl.HaskellPsiImplUtil
 import intellij.haskell.psi.{HaskellModid, HaskellPsiUtil}
-import intellij.haskell.util.{HaskellProjectUtil, ScalaUtil}
+import intellij.haskell.util.{HaskellEditorUtil, HaskellProjectUtil, ScalaUtil}
 import intellij.haskell.{HaskellFile, HaskellFileType}
 
 class HaskellRenameFileProcessor extends RenamePsiElementProcessor {
@@ -38,7 +37,7 @@ class HaskellRenameFileProcessor extends RenamePsiElementProcessor {
       val psiFile = element.getContainingFile.getOriginalFile
       HaskellPsiUtil.invalidateModuleName(psiFile)
       HaskellComponentsManager.clearLoadedModule(psiFile)
-      HaskellAnnotator.restartDaemonCodeAnalyzerForFile(psiFile)
+      HaskellEditorUtil.restartDaemonCodeAnalyzerForFile(psiFile)
     }
   }
 }

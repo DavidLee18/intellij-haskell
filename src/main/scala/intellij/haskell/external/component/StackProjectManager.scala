@@ -33,7 +33,6 @@ import com.intellij.ui.EditorNotifications
 import intellij.haskell.HTool.{Hls, Hoogle, Ormolu, StylishHaskell}
 import intellij.haskell.external.execution.CommandLine
 import intellij.haskell.action.HaskellReformatAction
-import intellij.haskell.annotator.HaskellAnnotator
 import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.execution.StackCommandLine
 import intellij.haskell.external.repl.StackRepl.LibType
@@ -452,13 +451,6 @@ object StackProjectManager {
               }
             } finally {
               getStackProjectManager(project).foreach(_.initializing = false)
-            }
-
-            // Force-load the module in REPL when REPL can be started. IntelliJ could have wanted to load file (via HaskellAnnotator)
-            // but the REPL couldn't be started yet.
-            HaskellAnnotator.getNotLoadedFiles(project) foreach { psiFile =>
-              HaskellNotificationGroup.logInfoEvent(project, s"${psiFile.getName} will be force-loaded")
-              HaskellAnnotator.restartDaemonCodeAnalyzerForFile(psiFile)
             }
 
             if (!HoogleComponent.doesHoogleDatabaseExist(project)) {
