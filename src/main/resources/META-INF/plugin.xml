@@ -497,7 +497,6 @@
                                  implementationClass="intellij.haskell.refactor.HaskellRefactoringSupportProvider"/>
         <moveFileHandler implementation="intellij.haskell.refactor.HaskellMoveFileHandler"/>
         <renamePsiElementProcessor implementation="intellij.haskell.refactor.HaskellRenameFileProcessor"/>
-        <renamePsiElementProcessor implementation="intellij.haskell.refactor.HaskellRenameVariableProcessor"/>
         <renameInputValidator implementation="intellij.haskell.refactor.HaskellRenameInputValidator"/>
         <lang.elementManipulator forClass="intellij.haskell.psi.HaskellNamedElement"
                                  implementationClass="intellij.haskell.psi.HaskellNamedElementManipulator"/>

@@ -100,12 +100,12 @@ class HaskellFindUsagesProvider extends FindUsagesProvider {
 
   override def getHelpId(psiElement: PsiElement): String = null
 
-  override def canFindUsagesFor(psiElement: PsiElement): Boolean = {
-    psiElement match {
-      case _: HaskellNamedElement => true
-      case _ => false
-    }
-  }
+  // Return false so IntelliJ's default FindUsagesHandlerFactory doesn't claim
+  // Haskell elements; LSP4IJ's LSPFindUsagesHandlerFactory then takes over and
+  // routes the request through textDocument/references. The class is kept (not
+  // deleted) because getWordsScanner above is still used by IntelliJ's text
+  // index for "Find in Files" word matching on Haskell tokens.
+  override def canFindUsagesFor(psiElement: PsiElement): Boolean = false
 
   override def getNodeText(psiElement: PsiElement, useFullName: Boolean): String = {
     psiElement match {
