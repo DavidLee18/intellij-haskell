@@ -59,6 +59,12 @@ Workarounds:
 - Configure a [`hie.yaml`](https://github.com/haskell/hie-bios#explicit-configuration) cradle that includes library packages with their sources, or switch to a `cabal.project` layout with `documentation: True` and the relevant `source-repository-package` entries so HLS finds unpacked sources on disk.
 - For ad-hoc lookups, use **Hoogle For It** (Shift+Ctrl+H) to jump to the symbol's online documentation, which links through to Hackage source.
 
+## Find Usages and Rename are scoped to type-checked files
+
+HLS's `textDocument/references` and `textDocument/rename` only see usages in files HLS has already loaded and type-checked. In a Stack project the `library`, `executable`, and `test-suite` components are separate cradle sessions, so e.g. `Find Usages` on a symbol defined in `src/Lib.hs` will list its uses within `Lib.hs` but not in `app/Main.hs` until you've opened `Main.hs` and waited for HLS to set it up. Once both files are loaded, subsequent searches usually pick up the cross-component references.
+
+Additionally, HLS's rename plugin refuses to touch *exported* names with an explicit error ("Renaming of an exported name is unsupported"), because it can't safely propagate the rename to downstream callers outside the project. Workaround: rename via a single bulk text replace (Find in Files), then fix the export list manually.
+
 ## HLS plugin-rule transient errors during cradle warmup
 
 LSP4IJ surfaces every server-side error as a notification. HLS's import-lens (codeLens) and inlay-hint plugins occasionally fail with `Rule Failed: ImportActions` / `Rule Failed: GhcSession` while the cradle is still settling. This fork disables both features on the LSP4IJ client side (they're informational decorations) to silence the noise. Core diagnostics / hover / completion / navigation / code-actions / formatting are unaffected.
