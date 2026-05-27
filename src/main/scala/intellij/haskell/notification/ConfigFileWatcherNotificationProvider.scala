@@ -36,7 +36,7 @@ class ConfigFileWatcherNotificationProvider extends EditorNotificationProvider {
 
     val panel = new EditorNotificationPanel
     panel.setText("Haskell project configuration file is updated")
-    panel.createActionLabel("Update Settings and restart REPLs", () => {
+    panel.createActionLabel("Update Settings and Restart", () => {
       ConfigFileWatcherNotificationProvider.showNotificationsByProject.put(project, false)
       notifications.updateAllNotifications()
       StackProjectManager.restart(project)

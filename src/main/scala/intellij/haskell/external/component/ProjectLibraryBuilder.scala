@@ -81,7 +81,8 @@ object ProjectLibraryBuilder {
         HaskellNotificationGroup.logInfoEvent(project, buildMessage)
         progressIndicator.setText(buildMessage)
 
-        // Forced `-Wwarn` otherwise build will fail in case of warnings and that will cause that REPLs of dependent targets will not start anymore
+        // Force -Wwarn so build succeeds in the face of warnings; otherwise downstream
+        // targets of this library can't load.
         val buildResult = StackCommandLine.buildInBackground(project, Seq(libTargetsName, "--ghc-options", "-Wwarn"))
         if (buildResult.contains(true) && !project.isDisposed) {
           val openFiles = FileEditorManager.getInstance(project).getOpenFiles.filter(HaskellFileUtil.isHaskellFile)
