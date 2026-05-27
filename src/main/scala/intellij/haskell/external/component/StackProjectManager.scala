@@ -32,7 +32,6 @@ import com.intellij.psi.{PsiTreeChangeAdapter, PsiTreeChangeEvent}
 import com.intellij.ui.EditorNotifications
 import intellij.haskell.HTool.{Hls, Hoogle, Ormolu, StylishHaskell}
 import intellij.haskell.external.execution.CommandLine
-import intellij.haskell.action.HaskellReformatAction
 import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.execution.StackCommandLine
 import intellij.haskell.cabal.LibType
@@ -147,19 +146,14 @@ object StackProjectManager {
         }
       }
 
-      // HLS resolution: user-set path → PATH lookup → ghcup install. Gated on useHlsLsp
-      // so users not opted into LSP never pay the install cost.
+      // HLS resolution: user-set path → PATH lookup → ghcup install.
       private def resolveHlsPath(progressIndicator: ProgressIndicator): Option[String] = {
-        if (!HaskellSettingsState.useHlsLsp) {
-          None
-        } else {
-          HaskellSettingsState.hlsPath
-            .filter(p => new java.io.File(p).canExecute)
-            .orElse(findToolOnPath(Hls.name))
-            .orElse {
-              if (installHlsViaGhcup(progressIndicator)) findToolOnPath(Hls.name) else None
-            }
-        }
+        HaskellSettingsState.hlsPath
+          .filter(p => new java.io.File(p).canExecute)
+          .orElse(findToolOnPath(Hls.name))
+          .orElse {
+            if (installHlsViaGhcup(progressIndicator)) findToolOnPath(Hls.name) else None
+          }
       }
 
       private def installHlsViaGhcup(progressIndicator: ProgressIndicator): Boolean = {
@@ -414,8 +408,6 @@ class StackProjectManager(project: Project) extends Disposable {
 
   def onProjectOpened(): Unit = {
     if (HaskellProjectUtil.isHaskellProject(project)) {
-      disableDefaultReformatAction()
-
       fixSdkStackVersion()
 
       initStackReplsManager()
@@ -425,13 +417,6 @@ class StackProjectManager(project: Project) extends Disposable {
         StackProjectManager.start(project)
       }
     }
-  }
-
-  private def disableDefaultReformatAction(): Unit = {
-    val actionManager = ActionManager.getInstance
-    // Overriding IntelliJ's default shortcut for formatting
-    actionManager.unregisterAction("ReformatCode")
-    actionManager.registerAction("ReformatCode", new HaskellReformatAction)
   }
 
   // Makes sure that after Stack is updated the right version is displayed.

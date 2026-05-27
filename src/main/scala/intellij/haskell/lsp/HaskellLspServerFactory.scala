@@ -2,7 +2,6 @@ package intellij.haskell.lsp
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.redhat.devtools.lsp4ij.LanguageServerFactory
 import com.redhat.devtools.lsp4ij.client.features.{LSPClientFeatures, LSPCodeLensFeature, LSPInlayHintFeature}
@@ -26,9 +25,7 @@ class HaskellLspServerFactory extends LanguageServerFactory {
   }
 }
 
-private class HaskellLspClientFeatures extends LSPClientFeatures {
-  override def isEnabled(file: VirtualFile): Boolean = HaskellSettingsState.useHlsLsp
-}
+private class HaskellLspClientFeatures extends LSPClientFeatures
 
 // HLS's importLens (textDocument/codeLens) and explicitly-resolved inlay hints
 // repeatedly fail with "Rule Failed: ImportActions" / "Rule Failed: GhcSession"
