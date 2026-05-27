@@ -35,7 +35,7 @@ import intellij.haskell.external.execution.CommandLine
 import intellij.haskell.action.HaskellReformatAction
 import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.execution.StackCommandLine
-import intellij.haskell.external.repl.StackRepl.LibType
+import intellij.haskell.cabal.LibType
 import intellij.haskell.external.repl.StackReplsManager
 import intellij.haskell.module.{HaskellModuleBuilder, StackProjectImportBuilder}
 import intellij.haskell.notification.ConfigFileWatcher
@@ -267,12 +267,6 @@ object StackProjectManager {
               }
 
               if (restart) {
-                val projectRepls = StackReplsManager.getRunningProjectRepls(project)
-                progressIndicator.setText("Busy stopping REPLs")
-                StackReplsManager.getGlobalRepl(project).foreach(_.exit())
-                StackReplsManager.getGlobalRepl2(project).foreach(_.exit())
-                projectRepls.foreach(_.exit())
-
                 progressIndicator.setText("Busy cleaning cache")
                 HaskellComponentsManager.invalidateGlobalCaches(project)
 
@@ -312,23 +306,6 @@ object StackProjectManager {
                 }
               }
 
-              val replsLoad = ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
-                StackReplsManager.getReplsManager(project).foreach(_.projectReplTargets.filter(_.stanzaType == LibType).foreach { info =>
-                  progressIndicator.setText("Busy starting project REPL " + info.targetsName)
-                  StackReplsManager.getProjectRepl(project, info) match {
-                    case Some(r) if r.available => HaskellNotificationGroup.logInfoEvent(project, s"REPL ${info.targetsName} is started")
-                    case _ => HaskellNotificationGroup.logWarningEvent(project, s"REPL ${info.targetsName} isn't started")
-                  }
-                  Thread.sleep(1000) // Have to wait between starting the REPLs otherwise timeouts while starting
-                })
-              })
-
-              progressIndicator.setText("Busy starting global Stack REPL")
-              StackReplsManager.getGlobalRepl(project)
-
-              progressIndicator.setText("Busy starting global Stack REPL2")
-              StackReplsManager.getGlobalRepl2(project)
-
               progressIndicator.setText("Busy preloading global project info")
               GlobalProjectInfoComponent.findGlobalProjectInfo(project)
 
@@ -360,9 +337,8 @@ object StackProjectManager {
               }
 
               progressIndicator.setText("Busy preloading caches")
-              if (!preloadLibraryFilesCacheFuture.isDone || !replsLoad.isDone) {
+              if (!preloadLibraryFilesCacheFuture.isDone) {
                 FutureUtil.waitForValue(project, preloadLibraryFilesCacheFuture, "preloading library files caches", 600)
-                FutureUtil.waitForValue(project, replsLoad, "starting and loading REPLs", 600)
               }
             } finally {
               getStackProjectManager(project).foreach(_.initializing = false)
@@ -432,9 +408,6 @@ class StackProjectManager(project: Project) extends Disposable {
 
   override def dispose(): Unit = {
     if (HaskellProjectUtil.isHaskellProject(project)) {
-      replsManager.foreach(_.getGlobalRepl.exit())
-      replsManager.foreach(_.getGlobalRepl2.exit())
-      replsManager.foreach(_.getRunningProjectRepls.foreach(_.exit()))
       HaskellComponentsManager.invalidateGlobalCaches(project)
     }
   }

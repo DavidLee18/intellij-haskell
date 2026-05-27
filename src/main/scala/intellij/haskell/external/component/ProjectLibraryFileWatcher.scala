@@ -21,7 +21,7 @@ import java.util
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.{VFileContentChangeEvent, VFileEvent}
-import intellij.haskell.external.repl.StackRepl.LibType
+import intellij.haskell.cabal.LibType
 import intellij.haskell.util.{HaskellFileUtil, HaskellProjectUtil}
 
 import scala.jdk.CollectionConverters._

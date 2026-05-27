@@ -20,8 +20,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFile
 import intellij.haskell.HaskellNotificationGroup
-import intellij.haskell.cabal.PackageInfo
-import intellij.haskell.external.repl.StackRepl.StanzaType
+import intellij.haskell.cabal.{PackageInfo, StanzaType}
 import intellij.haskell.external.repl.StackReplsManager
 import intellij.haskell.util.GhcVersion
 
@@ -29,11 +28,6 @@ object HaskellComponentsManager {
 
   case class ComponentTarget(module: Module, modulePath: String, packageName: String, target: String, stanzaType: StanzaType, sourceDirs: Seq[String],
                              mainIs: Option[String], isImplicitPreludeActive: Boolean, buildDepends: Seq[String], exposedModuleNames: Seq[String] = Seq.empty)
-
-  def clearLoadedModule(psiFile: PsiFile): Unit = {
-    val projectRepl = StackReplsManager.getProjectRepl(psiFile)
-    projectRepl.foreach(_.clearLoadedModule())
-  }
 
   def findAvailableModuleLibraryModuleNamesWithIndex(module: Module): Iterable[String] = {
     AvailableModuleNamesComponent.findAvailableModuleLibraryModuleNamesWithIndex(module)

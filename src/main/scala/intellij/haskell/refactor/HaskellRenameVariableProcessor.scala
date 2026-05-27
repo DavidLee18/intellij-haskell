@@ -25,7 +25,7 @@ import com.intellij.refactoring.listeners.RefactoringElementListener
 import com.intellij.refactoring.rename.RenamePsiElementProcessor
 import intellij.haskell.HaskellFile
 import intellij.haskell.external.component.{HaskellComponentsManager, ProjectLibraryBuilder}
-import intellij.haskell.external.repl.StackRepl.LibType
+import intellij.haskell.cabal.LibType
 import intellij.haskell.psi.HaskellModid
 import intellij.haskell.util.{HaskellFileUtil, HaskellProjectUtil, ScalaUtil}
 

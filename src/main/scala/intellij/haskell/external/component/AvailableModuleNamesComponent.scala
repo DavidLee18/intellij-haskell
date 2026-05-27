@@ -21,7 +21,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.{IndexNotReadyException, Project}
 import com.intellij.psi.search.{FileTypeIndex, GlobalSearchScope}
 import intellij.haskell.external.component.HaskellComponentsManager.ComponentTarget
-import intellij.haskell.external.repl.StackRepl.{BenchmarkType, TestSuiteType}
+import intellij.haskell.cabal.{BenchmarkType, TestSuiteType}
 import intellij.haskell.psi.HaskellPsiUtil
 import intellij.haskell.util.{ApplicationUtil, HaskellFileUtil, ScalaFutureUtil}
 import intellij.haskell.{HaskellFileType, HaskellNotificationGroup}

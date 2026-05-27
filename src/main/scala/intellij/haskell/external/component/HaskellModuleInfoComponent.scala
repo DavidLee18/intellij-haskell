@@ -24,7 +24,7 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.psi.PsiFile
 import intellij.haskell.HaskellNotificationGroup
 import intellij.haskell.external.component.HaskellComponentsManager.ComponentTarget
-import intellij.haskell.external.repl.StackRepl.LibType
+import intellij.haskell.cabal.LibType
 import intellij.haskell.external.repl.StackReplsManager
 import intellij.haskell.runconfig.console.HaskellConsoleView
 import intellij.haskell.util.{HaskellFileUtil, HaskellProjectUtil, ScalaFutureUtil, ScalaUtil}

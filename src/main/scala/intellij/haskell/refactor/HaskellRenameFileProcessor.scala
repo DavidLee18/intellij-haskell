@@ -36,7 +36,6 @@ class HaskellRenameFileProcessor extends RenamePsiElementProcessor {
     ScalaUtil.runnable {
       val psiFile = element.getContainingFile.getOriginalFile
       HaskellPsiUtil.invalidateModuleName(psiFile)
-      HaskellComponentsManager.clearLoadedModule(psiFile)
       HaskellEditorUtil.restartDaemonCodeAnalyzerForFile(psiFile)
     }
   }

@@ -25,7 +25,7 @@ import intellij.haskell.HaskellNotificationGroup
 import intellij.haskell.editor.HaskellProblemsView
 import intellij.haskell.external.component.HaskellComponentsManager.ComponentTarget
 import intellij.haskell.external.execution.StackCommandLine
-import intellij.haskell.external.repl.StackRepl.LibType
+import intellij.haskell.cabal.LibType
 import intellij.haskell.external.repl.StackReplsManager
 import intellij.haskell.external.repl.StackReplsManager.ProjectReplTargets
 import intellij.haskell.util.{HaskellEditorUtil, HaskellFileUtil, HaskellProjectUtil}
@@ -92,20 +92,6 @@ object ProjectLibraryBuilder {
               case Some(target) => Some((target, file))
               case None => None
             }).filter(_._1.stanzaType != LibType)
-
-          val projectNonLibRepls = StackReplsManager.getRunningProjectRepls(project).filter(_.stanzaType != LibType)
-          projectNonLibRepls.foreach { repl =>
-            repl.restart()
-          }
-
-          // When project is opened and has build errors some REPLs could not have been started
-          StackReplsManager.getReplsManager(project).foreach(_.projectReplTargets.filter(_.stanzaType == LibType).foreach { info =>
-            StackReplsManager.getProjectRepl(project, info).foreach { repl =>
-              if (!repl.available && !repl.starting) {
-                repl.start()
-              }
-            }
-          })
 
           openNonLibFiles.map(_._2).foreach { vf =>
             HaskellFileUtil.convertToHaskellFileInReadAction(project, vf).toOption match {

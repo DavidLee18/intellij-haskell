@@ -41,7 +41,6 @@ class HaskellMoveFileHandler extends MoveFileHandler {
 
   override def updateMovedFile(psiFile: PsiFile): Unit = {
     HaskellPsiUtil.invalidateModuleName(psiFile)
-    HaskellComponentsManager.clearLoadedModule(psiFile)
     HaskellComponentsManager.invalidateFileInfos(psiFile)
     HaskellEditorUtil.restartDaemonCodeAnalyzerForFile(psiFile)
   }
