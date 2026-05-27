@@ -515,10 +515,6 @@
         <lang.braceMatcher language="Alex"
                            implementationClass="intellij.haskell.alex.lang.AlexBraceMatcher"/>
 
-        <!-- Doc-Provider -->
-        <lang.documentationProvider language="Haskell"
-                                    implementationClass="intellij.haskell.external.component.HaskellDocumentationProvider"/>
-
         <!-- Quick definition -->
         <lang.implementationTextSelectioner language="Haskell"
                                             implementationClass="intellij.haskell.codeinsight.HaskellImplementationTextSelectioner"/>
