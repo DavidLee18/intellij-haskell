@@ -643,10 +643,6 @@
                         serviceImplementation="intellij.haskell.editor.HaskellProblemsView"
                         overrides="true"/>
 
-        <applicationService serviceInterface="com.intellij.codeInsight.TargetElementUtil"
-                            serviceImplementation="intellij.haskell.navigation.HaskellTargetElementUtil"
-                            overrides="true"/>
-
         <targetElementEvaluator language="Haskell"
                                 implementationClass="intellij.haskell.navigation.HaskellTargetElementUtil2"/>
 
