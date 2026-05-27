@@ -321,32 +321,6 @@ object StackProjectManager {
                   }
                   Thread.sleep(1000) // Have to wait between starting the REPLs otherwise timeouts while starting
                 })
-
-                val projectFiles = ApplicationUtil.runReadActionWithFileAccess(project,
-                  if (project.isDisposed) {
-                    Iterable()
-                  } else {
-                    HaskellFileIndex.findProjectHaskellFiles(project)
-                  }, "Finding project files with imported module names")
-
-                val projectFilesWithImportedModuleNames = projectFiles match {
-                  case Right(files) => Some(files.map(pf => (pf, ApplicationUtil.runReadAction(HaskellPsiUtil.findImportDeclarations(pf), Some(project)).flatMap(id => ApplicationUtil.runReadAction(id.getModuleName, Some(project))))))
-                  case Left(_) =>
-                    HaskellNotificationGroup.logInfoEvent(project, "Couldn't retrieve project files")
-                    None
-                }
-
-                projectFilesWithImportedModuleNames match {
-                  case Some(fm) =>
-                    fm.foreach { case (pf, moduleNames) =>
-                      HaskellPsiUtil.findModuleName(pf).foreach(BrowseModuleComponent.findModuleIdentifiersSync(project, _))
-
-                      moduleNames.foreach(mn => HaskellModuleNameIndex.findFilesByModuleName(project, mn))
-                      HaskellNotificationGroup.logInfoEvent(project, "Loading module identifiers " + moduleNames.mkString(", "))
-                      moduleNames.foreach(mn => BrowseModuleComponent.findModuleIdentifiersSync(project, mn))
-                    }
-                  case None => HaskellNotificationGroup.logInfoEvent(project, "Couldn't load module identifiers due to timeout")
-                }
               })
 
               progressIndicator.setText("Busy starting global Stack REPL")
@@ -361,41 +335,10 @@ object StackProjectManager {
               progressIndicator.setText("Busy preloading library packages info")
               LibraryPackageInfoComponent.preloadLibraryPackageInfos(project)
 
-              progressIndicator.setText("Busy preloading Stack component info cache")
-              val preloadStackComponentInfoCache = ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.callable {
-                HaskellComponentsManager.preloadStackComponentInfoCache(project)
-              })
-
+              progressIndicator.setText("Busy downloading library sources")
               val preloadLibraryFilesCacheFuture = ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
                 if (!project.isDisposed) {
-                  progressIndicator.setText("Busy downloading library sources")
                   HaskellModuleBuilder.addLibrarySources(project, update = restart)
-
-                  HaskellComponentsManager.preloadLibraryFilesCache(project)
-                }
-              })
-
-              progressIndicator.setText("Busy preloading library identifiers")
-              val preloadLibraryIdentifiersCacheFuture = ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
-                if (!project.isDisposed) {
-                  HaskellComponentsManager.preloadLibraryIdentifiersCaches(project)
-                }
-              })
-
-              progressIndicator.setText("Busy preloading all library identifiers")
-              ApplicationManager.getApplication.executeOnPooledThread(ScalaUtil.runnable {
-                if (!project.isDisposed) {
-                  getStackProjectManager(project).foreach(_.preloadingAllLibraryIdentifiers = true)
-                  try {
-                    HaskellComponentsManager.preloadAllLibraryIdentifiersCaches(project)
-
-                    if (!project.isDisposed) {
-                      HaskellNotificationGroup.logInfoEvent(project, "Restarting global REPL to release memory")
-                      StackReplsManager.getGlobalRepl(project).foreach(_.restart())
-                    }
-                  } finally {
-                    getStackProjectManager(project).foreach(_.preloadingAllLibraryIdentifiers = false)
-                  }
                 }
               })
 
@@ -416,37 +359,9 @@ object StackProjectManager {
                 }
               }
 
-              HaskellPsiUtil.getPsiManager(project).foreach(_.addPsiTreeChangeListener(new PsiTreeChangeAdapter {
-
-                private def invalidateInfo(event: PsiTreeChangeEvent): Unit = {
-                  if (Option(event.getParent).flatMap(p => Option(p.getNode)).exists(_.getElementType != HaskellFileElementType.Instance) || Option(event.getNewChild).isDefined) {
-                    Option(event.getFile).foreach(f => {
-                      if (Option(event.getNewChild).orElse(Option(event.getParent)).flatMap(HaskellPsiUtil.findImportDeclarations).isDefined) {
-                        // Have to refresh because import declarations can be changed
-                        FileModuleIdentifiers.refresh(f)
-                      }
-                    })
-                  }
-                }
-
-                override def childReplaced(event: PsiTreeChangeEvent): Unit = {
-                  invalidateInfo(event)
-                }
-
-                override def childrenChanged(event: PsiTreeChangeEvent): Unit = {
-                  invalidateInfo(event)
-                }
-
-                override def childRemoved(event: PsiTreeChangeEvent): Unit = {
-                  invalidateInfo(event)
-                }
-              }, project))
-
               progressIndicator.setText("Busy preloading caches")
-              if (!preloadLibraryFilesCacheFuture.isDone || !preloadStackComponentInfoCache.isDone || !preloadLibraryIdentifiersCacheFuture.isDone || !replsLoad.isDone) {
-                FutureUtil.waitForValue(project, preloadStackComponentInfoCache, "preloading project cache", 600)
+              if (!preloadLibraryFilesCacheFuture.isDone || !replsLoad.isDone) {
                 FutureUtil.waitForValue(project, preloadLibraryFilesCacheFuture, "preloading library files caches", 600)
-                FutureUtil.waitForValue(project, preloadLibraryIdentifiersCacheFuture, "preloading library identifiers caches", 600)
                 FutureUtil.waitForValue(project, replsLoad, "starting and loading REPLs", 600)
               }
             } finally {

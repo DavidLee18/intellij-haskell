@@ -54,29 +54,6 @@ object HoogleComponent {
     }
   }
 
-  def findDocumentation(project: Project, qualifiedNameElement: HaskellQualifiedNameElement): Option[String] = {
-    if (isHoogleFeatureAvailable(project)) {
-      ProgressManager.checkCanceled()
-
-      val name = qualifiedNameElement.getIdentifierElement.getName
-      val psiFile = qualifiedNameElement.getContainingFile.getOriginalFile
-      DefinitionLocationComponent.findDefinitionLocation(psiFile, qualifiedNameElement, None) match {
-        case Left(noInfo) =>
-          HaskellNotificationGroup.logWarningEvent(project, s"No documentation available as no location info could be found for identifier `$name` due to: ${noInfo.message}")
-          None
-        case Right(info) =>
-          val locationName = info match {
-            case PackageModuleLocation(_, _, _, pn) => pn
-            case LocalModuleLocation(pf, _, _) => HaskellPsiUtil.findModuleName(pf)
-          }
-          ProgressManager.checkCanceled()
-          HoogleComponent.createDocumentation(project, name, locationName)
-      }
-    } else {
-      Some("No documentation available as Hoogle (database) isn't available")
-    }
-  }
-
   private def createDocumentation(project: Project, name: String, locationName: Option[String]): Option[String] = {
     def mkString(lines: mutable.Seq[String]) = {
       lines.mkString("\n").
