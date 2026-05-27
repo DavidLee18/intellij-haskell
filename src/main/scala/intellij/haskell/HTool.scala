@@ -6,10 +6,6 @@ sealed abstract class HTool extends Product with Serializable {
 
 object HTool {
 
-  case object Hlint extends HTool {
-    def name: String = "hlint"
-  }
-
   case object Hoogle extends HTool {
     def name: String = "hoogle"
   }

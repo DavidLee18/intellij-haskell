@@ -583,12 +583,6 @@
         <colorSettingsPage implementation="intellij.haskell.cabal.highlighting.CabalColorSettingsPage"/>
         <colorSettingsPage implementation="intellij.haskell.alex.highlighting.AlexColorSettingsPage"/>
 
-        <!-- Inspection -->
-        <localInspection language="Haskell" shortName="HLintInspection"
-                         displayName="Inspection by HLint"
-                         groupName="Haskell" enabledByDefault="true" level="WARNING"
-                         implementationClass="intellij.haskell.inspection.HLintInspectionTool"/>
-
         <!-- Intention -->
         <intentionAction>
             <className>intellij.haskell.intention.AddParensIntention</className>

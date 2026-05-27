@@ -26,13 +26,11 @@ import javax.swing.event.DocumentEvent
 
 class HaskellConfigurable extends Configurable {
   private var isModifiedByUser = false
-  private val hlintOptionsField = new JTextField
   private val useSystemGhcToggle = new JCheckBox
   private val replTimeoutField = new JTextField
   private val afterRestartLabel = new JLabel("*) Changes will take effect after restarting IntelliJ")
   private val newProjectTemplateNameField = new JTextField
   private val cachePathField = new JTextField
-  private val hlintPathField = new JTextField
   private val hooglePathField = new JTextField
   private val ormoluPathField = new JTextField
   private val stylishHaskellPathField = new JTextField
@@ -54,7 +52,6 @@ class HaskellConfigurable extends Configurable {
 
     def toggleToolPathsVisibility(): Unit = {
       val visible = useCustomToolsToggle.isSelected
-      hlintPathField.setVisible(visible)
       hooglePathField.setVisible(visible)
       stylishHaskellPathField.setVisible(visible)
       ormoluPathField.setVisible(visible)
@@ -69,11 +66,9 @@ class HaskellConfigurable extends Configurable {
       isModifiedByUser = true
     }
 
-    hlintOptionsField.getDocument.addDocumentListener(docListener)
     replTimeoutField.getDocument.addDocumentListener(docListener)
     newProjectTemplateNameField.getDocument.addDocumentListener(docListener)
     cachePathField.getDocument.addDocumentListener(docListener)
-    hlintPathField.getDocument.addDocumentListener(docListener)
     hooglePathField.getDocument.addDocumentListener(docListener)
     ormoluPathField.getDocument.addDocumentListener(docListener)
     stylishHaskellPathField.getDocument.addDocumentListener(docListener)
@@ -130,7 +125,6 @@ class HaskellConfigurable extends Configurable {
 
     val labeledControls = List(
       (new JLabel(DefaultGhcOptions), defaultGhcOptionsField),
-      (new JLabel(HlintOptions), hlintOptionsField),
       (new JLabel(ReplTimout), replTimeoutField),
       (new JLabel(ExtraStackArguments), extraStackArgumentsField),
       (new JLabel(""), afterRestartLabel),
@@ -138,7 +132,6 @@ class HaskellConfigurable extends Configurable {
       (new JLabel(CachePath), cachePathField),
       (new JLabel(BuildToolsUsingSystemGhc), useSystemGhcToggle),
       (new JLabel(UseCustomTool), useCustomToolsToggle),
-      (new JLabel(HlintPath), hlintPathField),
       (new JLabel(HooglePath), hooglePathField),
       (new JLabel(OrmoluPath), ormoluPathField),
       (new JLabel(StylishHaskellPath), stylishHaskellPathField),
@@ -175,11 +168,9 @@ class HaskellConfigurable extends Configurable {
 
     state.defaultGhcOptions = defaultGhcOptionsField.getText
     state.replTimeout = validREPLTimeout
-    state.hlintOptions = hlintOptionsField.getText
     state.useSystemGhc = useSystemGhcToggle.isSelected
     state.newProjectTemplateName = newProjectTemplateNameField.getText
     state.cachePath = cachePathField.getText
-    state.hlintPath = hlintPathField.getText
     state.hooglePath = hooglePathField.getText
     state.ormoluPath = ormoluPathField.getText
     state.stylishHaskellPath = stylishHaskellPathField.getText
@@ -212,12 +203,10 @@ class HaskellConfigurable extends Configurable {
     if (useCustomToolsToggle.isSelected) {
       if (
         ormoluPathField.getText.trim.isEmpty ||
-          hlintPathField.getText.trim.isEmpty ||
           hooglePathField.getText.trim.isEmpty) {
         throw new ConfigurationException(s"All Haskell tools paths have to be set")
       }
 
-      checkFileExists(hlintPathField.getText)
       checkFileExists(hooglePathField.getText)
       checkFileExists(ormoluPathField.getText)
       checkFileExists(stylishHaskellPathField.getText)
@@ -232,12 +221,10 @@ class HaskellConfigurable extends Configurable {
   override def reset(): Unit = {
     val state = HaskellSettingsPersistentStateComponent.getInstance().getState
     defaultGhcOptionsField.setText(state.defaultGhcOptions)
-    hlintOptionsField.setText(state.hlintOptions)
     useSystemGhcToggle.setSelected(state.useSystemGhc)
     replTimeoutField.setText(state.replTimeout.toString)
     newProjectTemplateNameField.setText(state.newProjectTemplateName)
     cachePathField.setText(state.cachePath)
-    hlintPathField.setText(state.hlintPath)
     hooglePathField.setText(state.hooglePath)
     ormoluPathField.setText(state.ormoluPath)
     stylishHaskellPathField.setText(state.stylishHaskellPath)
@@ -251,11 +238,9 @@ class HaskellConfigurable extends Configurable {
 object HaskellConfigurable {
   final val DefaultGhcOptions = "Default REPL GHC options"
   final val ReplTimout = "Background REPL timeout in seconds *"
-  final val HlintOptions = "Hlint options"
   final val NewProjectTemplateName = "Template name for new project"
   final val CachePath = "Cache path *"
   final val BuildToolsUsingSystemGhc = "Build tools using system GHC *"
-  final val HlintPath = "Hlint path"
   final val HooglePath = "Hoogle path"
   final val StylishHaskellPath = "Stylish Haskell path"
   final val OrmoluPath = "Ormolu path"

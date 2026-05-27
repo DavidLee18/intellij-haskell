@@ -30,7 +30,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.psi.{PsiTreeChangeAdapter, PsiTreeChangeEvent}
 import com.intellij.ui.EditorNotifications
-import intellij.haskell.HTool.{Hlint, Hls, Hoogle, Ormolu, StylishHaskell}
+import intellij.haskell.HTool.{Hls, Hoogle, Ormolu, StylishHaskell}
 import intellij.haskell.external.execution.CommandLine
 import intellij.haskell.action.HaskellReformatAction
 import intellij.haskell.annotator.HaskellAnnotator
@@ -58,10 +58,6 @@ object StackProjectManager {
 
   def isHoogleAvailable(project: Project): Option[String] = {
     getStackProjectManager(project).flatMap(_.hoogleAvailable)
-  }
-
-  def isHlintAvailable(project: Project): Option[String] = {
-    getStackProjectManager(project).flatMap(_.hlintAvailable)
   }
 
   def isStylishHaskellAvailable(project: Project): Option[String] = {
@@ -128,7 +124,6 @@ object StackProjectManager {
           resolveHlsPath(progressIndicator)
         } else if (HaskellSettingsState.useCustomTools) {
           tool match {
-            case Hlint => HaskellSettingsState.hlintPath
             case Hoogle => HaskellSettingsState.hooglePath
             case Ormolu => HaskellSettingsState.ormoluPath
             case StylishHaskell => HaskellSettingsState.stylishHaskellPath
@@ -212,21 +207,16 @@ object StackProjectManager {
           .map(_.getAbsolutePath)
       }
 
-      /**
-        * Check if at least HLint is installed.
-        */
-      private def isHLintInstalled: Boolean = {
-        GlobalInfo.toolPath(HTool.Hlint).exists()
+      private def isHoogleInstalled: Boolean = {
+        GlobalInfo.toolPath(HTool.Hoogle).exists()
       }
 
       override def run(progressIndicator: ProgressIndicator): Unit = {
         try {
-          if (update || !isHLintInstalled) {
+          if (update || !isHoogleInstalled) {
             progressIndicator.setText(s"Busy with updating Stack's package index")
             StackCommandLine.updateStackIndex(project)
           }
-
-          getStackProjectManager(project).foreach(_.hlintAvailable = isToolAvailable(progressIndicator, HTool.Hlint))
 
           getStackProjectManager(project).foreach(_.hoogleAvailable = isToolAvailable(progressIndicator, HTool.Hoogle))
 
@@ -255,7 +245,6 @@ object StackProjectManager {
         }
 
         if (getStackProjectManager(project).exists(_.installingHaskellTools == false)) {
-          getStackProjectManager(project).foreach(_.hlintAvailable = None)
           getStackProjectManager(project).foreach(_.hoogleAvailable = None)
           getStackProjectManager(project).foreach(_.ormoluAvailable = None)
           getStackProjectManager(project).foreach(_.stylishHaskellAvailable = None)
@@ -500,9 +489,6 @@ class StackProjectManager(project: Project) extends Disposable {
 
   @volatile
   private var hoogleAvailable: Option[String] = None
-
-  @volatile
-  private var hlintAvailable: Option[String] = None
 
   @volatile
   private var stylishHaskellAvailable: Option[String] = None

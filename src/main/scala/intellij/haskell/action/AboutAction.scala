@@ -19,7 +19,7 @@ package intellij.haskell.action
 import com.intellij.openapi.actionSystem.{ActionUpdateThread, AnAction, AnActionEvent}
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.util.SystemInfo
-import intellij.haskell.external.component.{HLintComponent, HaskellComponentsManager, HoogleComponent, StackProjectManager}
+import intellij.haskell.external.component.{HaskellComponentsManager, HoogleComponent, StackProjectManager}
 import intellij.haskell.external.execution.StackCommandLine
 import intellij.haskell.util.HaskellEditorUtil
 
@@ -46,7 +46,6 @@ class AboutAction extends AnAction {
     val project = actionEvent.getProject
     messages.+=(s"${boldToolName("Stack")} version: " + StackCommandLine.run(project, Seq("--numeric-version"), enableExtraArguments = false).map(_.getStdout).getOrElse("-"))
     messages.+=(s"${boldToolName("GHC")}: " + HaskellComponentsManager.getGhcVersion(project).map(_.prettyString).getOrElse("-") + "\n")
-    messages.+=(s"${boldToolName("HLint")}: " + HLintComponent.versionInfo(project))
     messages.+=(s"${boldToolName("Hoogle")}: " + HoogleComponent.versionInfo(project))
     messages.+=(s"${boldToolName("Ormolu")}: " + OrmoluReformatAction.versionInfo(project))
     messages.+=(s"${boldToolName("Stylish-haskell")}: " + StylishHaskellReformatAction.versionInfo(project))

@@ -52,10 +52,6 @@ object GlobalInfo {
     new File(toolsBinPath, name)
   }
 
-  lazy val defaultHlintPath: File = {
-    toolPath(HTool.Hlint)
-  }
-
   lazy val defaultHooglePath: File = {
     toolPath(HTool.Hoogle)
   }

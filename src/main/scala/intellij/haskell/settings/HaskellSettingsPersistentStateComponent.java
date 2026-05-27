@@ -50,13 +50,11 @@ public class HaskellSettingsPersistentStateComponent implements PersistentStateC
 
     static class HaskellSettingsState {
         public Integer replTimeout = 30;
-        public String hlintOptions = "";
         public Boolean useSystemGhc = true;
         public Boolean reformatCodeBeforeCommit = false;
         public Boolean optimizeImportsBeforeCommit = false;
         public String newProjectTemplateName = "new-template";
         public String cachePath = GlobalInfo.DefaultCachePath();
-        public String hlintPath = "";
         public String hooglePath = "";
         public String ormoluPath = "";
         public String stylishHaskellPath = "";

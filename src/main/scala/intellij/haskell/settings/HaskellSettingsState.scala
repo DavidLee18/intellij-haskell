@@ -23,10 +23,6 @@ object HaskellSettingsState {
     state.replTimeout
   }
 
-  def getHlintOptions: String = {
-    state.hlintOptions
-  }
-
   def useSystemGhc: Boolean = {
     state.useSystemGhc
   }
@@ -57,10 +53,6 @@ object HaskellSettingsState {
 
   def customTools: Boolean = {
     state.customTools
-  }
-
-  def hlintPath: Option[String] = {
-    Option.when(customTools && state.hlintPath.nonEmpty)(state.hlintPath)
   }
 
   def hooglePath: Option[String] = {
